@@ -96,8 +96,8 @@
         }
 
         .interface {
-            display: grid;
-            grid-template-rows: auto 1fr auto;
+            display: flex;
+            flex-direction: column;
             height: 100%;
             width: 100%;
             z-index: 10;
@@ -114,6 +114,7 @@
             align-items: center;
             text-transform: uppercase;
             box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+            flex-shrink: 0;
         }
 
         .brand {
@@ -145,6 +146,8 @@
             grid-template-columns: 300px 1fr;
             gap: 20px;
             height: 100%;
+            flex: 1;
+            min-height: 0;
             overflow: hidden;
         }
 
@@ -290,14 +293,135 @@
         }
 
         /* 
+           Music broadcast banner
+        */
+        .music-banner {
+            border: 1px solid var(--main-color);
+            background: linear-gradient(90deg, rgba(0, 255, 65, 0.08) 0%, rgba(5, 15, 5, 0.85) 50%, rgba(0, 255, 65, 0.04) 100%);
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.08);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .music-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .music-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .sound-wave {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 14px;
+        }
+
+        .sound-wave span {
+            display: block;
+            width: 3px;
+            background: var(--main-color);
+            border-radius: 1px;
+            animation: soundWave 1.2s ease-in-out infinite alternate;
+        }
+
+        .sound-wave span:nth-child(1) { height: 4px; animation-delay: 0.1s; }
+        .sound-wave span:nth-child(2) { height: 14px; animation-delay: 0.4s; }
+        .sound-wave span:nth-child(3) { height: 8px; animation-delay: 0.2s; }
+        .sound-wave span:nth-child(4) { height: 11px; animation-delay: 0.5s; }
+
+        @keyframes soundWave {
+            0% { height: 3px; opacity: 0.4; }
+            100% { height: 14px; opacity: 1; }
+        }
+
+        .music-tag {
+            background: var(--main-color);
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .music-text {
+            font-size: 0.82rem;
+            color: #ccc;
+            line-height: 1.4;
+        }
+
+        .music-alert {
+            color: var(--main-color);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .music-artist-highlight {
+            color: var(--main-color);
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .music-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .music-badge {
+            font-size: 0.7rem;
+            color: var(--main-color);
+            border: 1px dashed var(--main-color);
+            padding: 2px 8px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .music-dismiss {
+            background: transparent;
+            border: 1px solid var(--dim-color);
+            color: var(--text-muted);
+            font-family: var(--font-main);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+
+        .music-dismiss:hover {
+            color: var(--alert-color);
+            border-color: var(--alert-color);
+            box-shadow: 0 0 8px rgba(255, 60, 60, 0.2);
+        }
+
+        /* 
            na telefonie wylaczam panel boczny bo i tak sie nic nie miesci
         */
         @media (max-width: 900px) {
             body { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; width: 100%; }
-            main { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+            main { grid-template-columns: 1fr; grid-template-rows: auto auto; height: auto; flex: none; }
             .side-panel { display: none; } 
-            .interface { padding: 10px; gap: 10px; width: 100%; }
+            .interface { padding: 10px; gap: 10px; width: 100%; height: auto; min-height: 100vh; }
             .projects-grid { overflow-y: visible; grid-template-columns: 1fr; }
+            .music-banner { flex-direction: column; align-items: flex-start; gap: 10px; padding: 10px 12px; }
+            .music-banner-actions { width: 100%; justify-content: space-between; }
         }
     </style>
 </head>
@@ -319,6 +443,25 @@
                 <span id="clock">00:00:00</span>
             </div>
         </header>
+
+        <!-- Music broadcast banner -->
+        <aside class="music-banner" id="music-banner" aria-label="Music Announcement">
+            <div class="music-banner-content">
+                <div class="music-indicator">
+                    <div class="sound-wave" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                    <span class="music-tag">[AUDIO_TRANSMISSION]</span>
+                </div>
+                <div class="music-text">
+                    <span class="music-alert">NEW SIGNAL:</span> I've officially started producing music! You can find &amp; stream all my tracks under the alias <span class="music-artist-highlight">situus</span> on Spotify, Apple Music, YouTube &amp; all major streaming platforms.
+                </div>
+            </div>
+            <div class="music-banner-actions">
+                <span class="music-badge">ARTIST: SITUUS</span>
+                <button type="button" class="music-dismiss" onclick="document.getElementById('music-banner').remove()" title="Dismiss announcement">[DISMISS]</button>
+            </div>
+        </aside>
 
         <main>
             
