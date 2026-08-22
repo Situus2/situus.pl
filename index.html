@@ -56,18 +56,25 @@
             --font-main: 'JetBrains Mono', monospace;
         }
 
+        html {
+            overflow-x: hidden;
+        }
+
         /* Resetujemy style dla body, zeby tailwind nie zepsul terminala */
         body {
             margin: 0; padding: 0;
             background-color: var(--bg-color);
             color: var(--main-color);
             font-family: var(--font-main);
+            min-height: 100vh;
+            min-height: 100dvh;
             height: 100vh;
             width: 100%;
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
             position: relative;
+            -webkit-text-size-adjust: 100%;
         }
 
         /* 
@@ -185,7 +192,7 @@
         /* projekty */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
             align-content: start;
             overflow-y: auto;
@@ -220,6 +227,8 @@
             font-size: 0.8rem;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            gap: 10px;
         }
 
         .card-content {
@@ -234,7 +243,11 @@
 
         /* przyciski */
         .btn-action {
-            display: block; width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 44px;
             background: transparent;
             border: 2px solid var(--main-color);
             color: var(--main-color);
@@ -242,6 +255,7 @@
             text-align: center; text-decoration: none; font-weight: 800; text-transform: uppercase;
             transition: 0.2s; position: relative; overflow: hidden;
             cursor: pointer;
+            touch-action: manipulation;
         }
 
         .btn-action::before {
@@ -270,10 +284,38 @@
 
         footer {
             border-top: 1px solid var(--dim-color);
-            padding-top: 10px;
-            font-size: 0.7rem;
+            padding-top: 14px;
+            padding-bottom: 10px;
+            font-size: 0.75rem;
             color: var(--text-muted);
-            display: flex; justify-content: space-between;
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .footer-email-badge {
+            color: #000 !important;
+            background: var(--main-color);
+            font-weight: 800;
+            padding: 4px 10px;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+            transition: 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 2px;
+        }
+
+        .footer-email-badge:hover {
+            background: #fff;
+            color: #000 !important;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.9);
+            transform: scale(1.03);
+            text-decoration: none;
         }
 
         @keyframes textFlicker {
@@ -296,16 +338,22 @@
            Music broadcast banner
         */
         .music-banner {
-            border: 1px solid var(--main-color);
-            background: linear-gradient(90deg, rgba(0, 255, 65, 0.08) 0%, rgba(5, 15, 5, 0.85) 50%, rgba(0, 255, 65, 0.04) 100%);
-            padding: 10px 18px;
+            border: 2px solid var(--main-color);
+            background: linear-gradient(90deg, rgba(0, 255, 65, 0.12) 0%, rgba(5, 20, 5, 0.92) 50%, rgba(0, 255, 65, 0.06) 100%);
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 15px;
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.08);
+            box-shadow: 0 0 22px rgba(0, 255, 65, 0.22), inset 0 0 15px rgba(0, 255, 65, 0.05);
             position: relative;
             flex-shrink: 0;
+            animation: bannerPulse 4s infinite alternate;
+        }
+
+        @keyframes bannerPulse {
+            0% { box-shadow: 0 0 14px rgba(0, 255, 65, 0.15), inset 0 0 10px rgba(0, 255, 65, 0.03); }
+            100% { box-shadow: 0 0 28px rgba(0, 255, 65, 0.35), inset 0 0 18px rgba(0, 255, 65, 0.08); }
         }
 
         .music-banner-content {
@@ -318,62 +366,83 @@
         .music-indicator {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex-shrink: 0;
         }
 
         .sound-wave {
             display: inline-flex;
             align-items: flex-end;
-            gap: 2px;
-            height: 14px;
+            gap: 3px;
+            height: 18px;
         }
 
         .sound-wave span {
             display: block;
-            width: 3px;
+            width: 4px;
             background: var(--main-color);
             border-radius: 1px;
+            box-shadow: 0 0 8px rgba(0, 255, 65, 0.7);
             animation: soundWave 1.2s ease-in-out infinite alternate;
         }
 
-        .sound-wave span:nth-child(1) { height: 4px; animation-delay: 0.1s; }
-        .sound-wave span:nth-child(2) { height: 14px; animation-delay: 0.4s; }
-        .sound-wave span:nth-child(3) { height: 8px; animation-delay: 0.2s; }
-        .sound-wave span:nth-child(4) { height: 11px; animation-delay: 0.5s; }
+        .sound-wave span:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+        .sound-wave span:nth-child(2) { height: 18px; animation-delay: 0.4s; }
+        .sound-wave span:nth-child(3) { height: 10px; animation-delay: 0.2s; }
+        .sound-wave span:nth-child(4) { height: 15px; animation-delay: 0.5s; }
 
         @keyframes soundWave {
-            0% { height: 3px; opacity: 0.4; }
-            100% { height: 14px; opacity: 1; }
+            0% { height: 4px; opacity: 0.5; }
+            100% { height: 18px; opacity: 1; }
         }
 
         .music-tag {
             background: var(--main-color);
             color: #000;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 800;
-            padding: 2px 6px;
-            letter-spacing: 1px;
+            padding: 3px 8px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            box-shadow: 0 0 14px rgba(0, 255, 65, 0.6);
+            animation: tagPulse 2s infinite alternate;
+        }
+
+        @keyframes tagPulse {
+            0% { box-shadow: 0 0 8px rgba(0, 255, 65, 0.4); }
+            100% { box-shadow: 0 0 18px rgba(0, 255, 65, 0.85); }
         }
 
         .music-text {
-            font-size: 0.82rem;
-            color: #ccc;
-            line-height: 1.4;
+            font-size: 0.85rem;
+            color: #ddd;
+            line-height: 1.5;
         }
 
         .music-alert {
             color: var(--main-color);
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 0.5px;
+            text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
+        }
+
+        .music-track-highlight {
+            color: #fff;
+            background: rgba(0, 255, 65, 0.15);
+            border: 1px solid var(--main-color);
+            padding: 1px 6px;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(0, 255, 65, 0.8);
+            letter-spacing: 0.5px;
+            display: inline-block;
         }
 
         .music-artist-highlight {
             color: var(--main-color);
-            font-weight: 700;
-            text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+            font-weight: 800;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
             letter-spacing: 1px;
+            text-decoration: underline;
         }
 
         .music-banner-actions {
@@ -384,12 +453,15 @@
         }
 
         .music-badge {
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             color: var(--main-color);
-            border: 1px dashed var(--main-color);
-            padding: 2px 8px;
+            background: rgba(0, 255, 65, 0.08);
+            border: 1px solid var(--main-color);
+            padding: 3px 10px;
+            font-weight: 700;
             letter-spacing: 1px;
             white-space: nowrap;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
         }
 
         .music-dismiss {
@@ -398,30 +470,109 @@
             color: var(--text-muted);
             font-family: var(--font-main);
             font-size: 0.7rem;
-            padding: 3px 8px;
+            padding: 4px 10px;
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: 0.2s;
+            touch-action: manipulation;
         }
 
         .music-dismiss:hover {
             color: var(--alert-color);
             border-color: var(--alert-color);
-            box-shadow: 0 0 8px rgba(255, 60, 60, 0.2);
+            box-shadow: 0 0 8px rgba(255, 60, 60, 0.3);
         }
 
         /* 
            na telefonie wylaczam panel boczny bo i tak sie nic nie miesci
         */
         @media (max-width: 900px) {
-            body { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; width: 100%; }
-            main { grid-template-columns: 1fr; grid-template-rows: auto auto; height: auto; flex: none; }
-            .side-panel { display: none; } 
-            .interface { padding: 10px; gap: 10px; width: 100%; height: auto; min-height: 100vh; }
-            .projects-grid { overflow-y: visible; grid-template-columns: 1fr; }
-            .music-banner { flex-direction: column; align-items: flex-start; gap: 10px; padding: 10px 12px; }
-            .music-banner-actions { width: 100%; justify-content: space-between; }
+            body {
+                overflow-y: auto;
+                overflow-x: hidden;
+                height: auto;
+                min-height: 100vh;
+                min-height: 100dvh;
+                width: 100%;
+            }
+            main {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                height: auto;
+                flex: none;
+            }
+            .side-panel {
+                display: none;
+            } 
+            .interface {
+                padding: 12px 10px;
+                gap: 14px;
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                min-height: 100dvh;
+            }
+            .projects-grid {
+                overflow-y: visible;
+                grid-template-columns: 1fr;
+                padding-right: 0;
+                gap: 16px;
+            }
+            .music-banner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 12px;
+            }
+            .music-banner-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 12px 15px;
+            }
+            .brand {
+                font-size: 1.05rem;
+                letter-spacing: 1.5px;
+                gap: 8px;
+                width: 100%;
+                justify-content: space-between;
+            }
+            .brand span.subtitle {
+                font-size: 0.72rem;
+            }
+            .sys-status {
+                width: 100%;
+                justify-content: space-between;
+                gap: 8px;
+                font-size: 0.68rem;
+            }
+            .card-content {
+                padding: 16px;
+            }
+            .card h3 {
+                font-size: 1.25rem;
+            }
+            .card p {
+                font-size: 0.85rem;
+                margin-bottom: 20px;
+            }
+            footer {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 6px;
+                padding-top: 15px;
+                padding-bottom: 15px;
+                font-size: 0.68rem;
+            }
         }
     </style>
 </head>
@@ -451,10 +602,10 @@
                     <div class="sound-wave" aria-hidden="true">
                         <span></span><span></span><span></span><span></span>
                     </div>
-                    <span class="music-tag">[AUDIO_TRANSMISSION]</span>
+                    <span class="music-tag">[&#9654; AUDIO_TRANSMISSION]</span>
                 </div>
                 <div class="music-text">
-                    <span class="music-alert">NEW SIGNAL:</span> I've officially started producing music! You can find &amp; stream all my tracks under the alias <span class="music-artist-highlight">situus</span> on Spotify, Apple Music, YouTube &amp; all major streaming platforms.
+                    <span class="music-alert">NEW TRACKS:</span> Check out my new releases <span class="music-track-highlight">Unsolved</span> &amp; <span class="music-track-highlight">Far Lands</span>! Stream all tracks under the alias <span class="music-artist-highlight">Situus</span> on Spotify, Apple Music, YouTube &amp; all major platforms.
                 </div>
             </div>
             <div class="music-banner-actions">
@@ -489,6 +640,7 @@
                     <p>> [SUKCES] 'wrapped' zaladowany.</p>
                     <p>> [SUKCES] 'tiktok_checker' zaladowany.</p>
                     <p>> [INFO] 'ai_chat' trening modelu...</p>
+                    <p>> [INFO] contact: <a href="mailto:situs1235@gmail.com" class="footer-email-badge" style="padding: 2px 8px; font-size: 0.7rem; text-decoration: none;">situs1235@gmail.com</a></p>
                     <p>> gotowy.</p>
                     <br>
                     <p style="color: var(--main-color)">
@@ -568,6 +720,7 @@
         <footer>
             <span>HOST: SITUUS.PL</span>
             <span>SYSTEM OWNER: SITUUS</span>
+            <span>OFFICIAL CONTACT: <a href="mailto:situs1235@gmail.com" class="footer-email-badge">&#9993; situs1235@gmail.com</a></span>
             <!-- kod jak kod, wazne ze dziala -->
             <span>DESIGN: TERMINAL_UI_V3</span>
         </footer>
@@ -579,30 +732,30 @@
        Domyslnie ukryty (hidden).
        Font-family: 'Inter' z Tailwind (klasa font-sans).
     -->
-    <div id="login-screen" class="hidden fixed inset-0 bg-[#212121]/95 backdrop-blur-sm z-[200] flex items-center justify-center p-6 animate-fade-in font-sans">
+    <div id="login-screen" class="hidden fixed inset-0 bg-[#212121]/95 backdrop-blur-sm z-[200] flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in font-sans">
         <!-- Close button (X) -->
-        <div onclick="toggleLogin(false)" class="absolute top-6 right-6 text-white cursor-pointer hover:text-[#ab68ff] text-2xl font-bold">&times;</div>
+        <div onclick="toggleLogin(false)" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-white cursor-pointer hover:text-[#ab68ff] text-2xl font-bold p-2 z-10">&times;</div>
 
-        <div class="w-full max-w-md bg-[#171717] rounded-2xl p-8 border border-white/10 shadow-2xl">
-            <div class="flex flex-col items-center mb-8">
-                <div class="w-16 h-16 rounded-2xl bg-[#ab68ff] flex items-center justify-center text-white text-3xl mb-4 shadow-[0_0_20px_rgba(171,104,255,0.3)]">
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <div class="w-full max-w-md bg-[#171717] rounded-2xl p-6 sm:p-8 border border-white/10 shadow-2xl my-auto">
+            <div class="flex flex-col items-center mb-6 sm:mb-8">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#ab68ff] flex items-center justify-center text-white text-2xl sm:text-3xl mb-4 shadow-[0_0_20px_rgba(171,104,255,0.3)]">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
-                <h1 class="text-2xl font-bold text-white">Witaj ponownie</h1>
-                <p class="text-gray-400 text-sm mt-2">Zaloguj się do swojego asystenta</p>
+                <h1 class="text-xl sm:text-2xl font-bold text-white">Witaj ponownie</h1>
+                <p class="text-gray-400 text-xs sm:text-sm mt-2">Zaloguj się do swojego asystenta</p>
             </div>
             
             <form id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Użytkownik</label>
-                    <input type="text" id="username" value="admin" class="w-full bg-[#2f2f2f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ab68ff] transition-all">
+                    <input type="text" id="username" value="admin" class="w-full bg-[#2f2f2f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ab68ff] transition-all text-sm sm:text-base">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Hasło</label>
-                    <input type="password" id="password" class="w-full bg-[#2f2f2f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ab68ff] transition-all" placeholder="••••••••">
+                    <input type="password" id="password" class="w-full bg-[#2f2f2f] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ab68ff] transition-all text-sm sm:text-base" placeholder="••••••••">
                 </div>
                 <div id="login-error" class="hidden text-red-500 text-sm text-center">Błędne dane logowania</div>
-                <button type="submit" class="w-full bg-[#ab68ff] hover:bg-[#9a57ee] text-white font-semibold py-3 rounded-xl transition-all transform active:scale-[0.98] shadow-lg">
+                <button type="submit" class="w-full bg-[#ab68ff] hover:bg-[#9a57ee] text-white font-semibold py-3 rounded-xl transition-all transform active:scale-[0.98] shadow-lg text-sm sm:text-base">
                     Zaloguj się
                 </button>
             </form>
@@ -742,31 +895,31 @@
             if (show) {
                 // Całkowita zmiana stylu na terminalowy błąd
                 modal.innerHTML = `
-                    <div class="relative w-full max-w-lg border-2 border-[#ff3c3c] bg-black p-1 shadow-[0_0_50px_rgba(255,60,60,0.15)] font-mono animate-fade-in">
+                    <div class="relative w-full max-w-lg border-2 border-[#ff3c3c] bg-black p-1 shadow-[0_0_50px_rgba(255,60,60,0.15)] font-mono animate-fade-in my-auto max-h-[90vh] overflow-y-auto">
                         
                         <!-- Header Bar -->
-                        <div class="bg-[#ff3c3c] text-black px-3 py-1 flex justify-between items-center font-bold tracking-wider text-sm">
+                        <div class="bg-[#ff3c3c] text-black px-3 py-1 flex justify-between items-center font-bold tracking-wider text-xs sm:text-sm sticky top-0 z-20">
                             <span>SYSTEM_ALERT: SECURITY_BREACH</span>
                             <span onclick="toggleLogin(false)" class="cursor-pointer hover:bg-black hover:text-[#ff3c3c] px-2 transition-colors">[X]</span>
                         </div>
 
-                        <div class="p-6 flex flex-col gap-6 relative overflow-hidden">
+                        <div class="p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 relative overflow-hidden">
                             <!-- Background noise for the modal -->
                             <div class="absolute inset-0 opacity-[0.03] pointer-events-none" 
                                  style="background-image: linear-gradient(0deg, transparent 24%, rgba(255, 60, 60, .3) 25%, rgba(255, 60, 60, .3) 26%, transparent 27%, transparent 74%, rgba(255, 60, 60, .3) 75%, rgba(255, 60, 60, .3) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 60, 60, .3) 25%, rgba(255, 60, 60, .3) 26%, transparent 27%, transparent 74%, rgba(255, 60, 60, .3) 75%, rgba(255, 60, 60, .3) 76%, transparent 77%, transparent); background-size: 50px 50px;">
                             </div>
 
                             <!-- Main Error -->
-                            <div class="flex items-start gap-4 z-10">
-                                <div class="text-[#ff3c3c] text-4xl mt-1">
-                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div class="flex items-start gap-3 sm:gap-4 z-10">
+                                <div class="text-[#ff3c3c] text-3xl sm:text-4xl mt-1 flex-shrink-0">
+                                    <svg class="w-8 h-8 sm:w-12 sm:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                                 </div>
                                 <div>
-                                    <h1 class="text-3xl font-bold text-[#ff3c3c] tracking-tight mb-2" style="text-shadow: 2px 2px 0px rgba(255,0,0,0.2);">ODMOWA DOSTĘPU</h1>
-                                    <p class="text-[#ff3c3c] text-xs uppercase tracking-widest opacity-80 mb-4">
+                                    <h1 class="text-xl sm:text-3xl font-bold text-[#ff3c3c] tracking-tight mb-2" style="text-shadow: 2px 2px 0px rgba(255,0,0,0.2);">ODMOWA DOSTĘPU</h1>
+                                    <p class="text-[#ff3c3c] text-[10px] sm:text-xs uppercase tracking-widest opacity-80 mb-3 sm:mb-4">
                                         Error Code: 403_FORBIDDEN // IP_UNTRUSTED
                                     </p>
-                                    <p class="text-gray-400 text-sm leading-relaxed font-mono border-l border-[#ff3c3c]/30 pl-3">
+                                    <p class="text-gray-400 text-xs sm:text-sm leading-relaxed font-mono border-l border-[#ff3c3c]/30 pl-3">
                                         > Projekt ma status: <span class="text-white">EXPERIMENTAL / PRIVATE</span>.<br>
                                         > Wykryto próbę połączenia z nieznanego węzła.<br>
                                         > Procedura logowania została zablokowana.
@@ -775,14 +928,14 @@
                             </div>
 
                             <!-- "Who are you" text as a comment -->
-                            <div class="z-10 mt-2">
-                                <div class="text-[#444] text-xs font-mono italic">
+                            <div class="z-10 mt-1 sm:mt-2">
+                                <div class="text-[#444] text-[11px] sm:text-xs font-mono italic break-all sm:break-normal">
                                     <span class="text-[#666] not-italic font-bold">root@situus:~$</span> echo "Kim jesteś? Jeśli cię znam i cię lubię może dam ci dostęp, zapytaj." >> /dev/null
                                 </div>
                             </div>
 
                             <!-- Action Button -->
-                            <button onclick="toggleLogin(false)" class="z-10 mt-2 w-full border border-[#ff3c3c] text-[#ff3c3c] hover:bg-[#ff3c3c] hover:text-black font-bold uppercase py-3 text-sm tracking-widest transition-all duration-200 group relative overflow-hidden">
+                            <button onclick="toggleLogin(false)" class="z-10 mt-1 sm:mt-2 w-full border border-[#ff3c3c] text-[#ff3c3c] hover:bg-[#ff3c3c] hover:text-black font-bold uppercase py-2.5 sm:py-3 text-xs sm:text-sm tracking-widest transition-all duration-200 group relative overflow-hidden">
                                 <span class="relative z-10">Zrozumiałem / Rozłącz</span>
                                 <div class="absolute inset-0 bg-[#ff3c3c] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-200 ease-out z-0"></div>
                             </button>
