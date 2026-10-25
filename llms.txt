@@ -1,18 +1,59 @@
 # Situus
 
-> Situus to pseudonim twórcy, który robi małe narzędzia webowe i wydaje muzykę. Na situus.pl są linki do jego projektów (Messenger Wrapped, Situus Chat) i informacje o utworach. Strona jest po polsku.
+> Situus (https://situus.pl/) to autorska strona muzyczna z dodatkowymi małymi narzędziami webowymi. Główną częścią strony jest dyskografia oraz oś czasu powstawania utworów elektronicznych i ambientowych inspirowanych m.in. klimatem ścieżki dźwiękowej z Minecrafta i twórczością C418. Cała muzyka powstaje w 100% ręcznie, bez użycia generatorów sztucznej inteligencji (No AI). Strona jest po polsku i ma interfejs w stylistyce Liquid Glass.
 
-Wszystkie narzędzia działają w przeglądarce, na osobnych subdomenach situus.pl. Kontakt: situs1235@gmail.com.
+- Strona główna: https://situus.pl/
+- Sekcja muzyczna: https://situus.pl/#muzyka
+- Kontakt: situs1235@gmail.com
 
-## Narzędzia
+## Muzyka (główny profil działalności)
 
-- [Messenger Wrapped](https://wrapped.situus.pl/): statystyki rozmów z Messengera. Użytkownik wgrywa eksport danych z Facebooka (plik JSON), a strona liczy statystyki lokalnie w przeglądarce – plik nie jest nigdzie wysyłany. Pokazuje m.in., kto pisał najwięcej w minionym roku. Darmowe.
-- [Situus Chat](https://chat.situus.pl/): eksperymentalny czat oparty na modelu językowym (LLM). Prywatny – działa tylko na zaufanych urządzeniach i dla osób, które dostały dostęp od autora. Nie jest publicznie dostępny.
+Situus tworzy i wydaje autorską muzykę instrumentalną oraz ambientową (No AI – każdy dźwięk, aranżacja i miks powstają ręcznie w programach DAW, m.in. FL Studio). Na stronie znajduje się interaktywna oś czasu 2026 roku pokazująca rzeczywiste daty powstania utworów (jeszcze przed ich pojawieniem się w serwisach streamingowych), szczegółowe historie ich tworzenia, kulisy powstania okładek oraz odtwarzacz roboczych, 30-sekundowych fragmentów utworów przedpremierowych.
 
-## Muzyka
+Gdzie słuchać wydanych utworów:
+- Spotify: https://open.spotify.com/search/Situus
+- Apple Music: https://music.apple.com/pl/search?term=Situus
+- YouTube: https://www.youtube.com/results?search_query=Situus
 
-- Situus wydaje autorską muzykę pod tym samym pseudonimem (No AI). Wydane utwory: „Unsolved” i „Far Lands” (dostępne w Spotify, Apple Music, YouTube i innych serwisach). W przygotowaniu i dopracowywaniu są „Unfinished Maps” oraz „Submerged”, których robocze fragmenty można odsłuchać bezpośrednio na stronie.
+### Dyskografia i oś czasu powstawania utworów (2026)
 
-## Kontakt
+ Pierwsze trzy utwory powstały w ciągu 10 dni podczas intensywnego sierpniowego okresu twórczego (15–24 sierpnia 2026), natomiast po 41 dniach przerwy (od 4 października 2026) ruszyły prace nad czwartym, bardziej zaawansowanym projektem w FL Studio.
 
-- E-mail: situs1235@gmail.com
+#### 1. Unsolved (`https://situus.pl/#muzyka/unsolved`)
+- **Data powstania:** 15 sierpnia 2026 (pierwszy utwór na osi)
+- **Status:** Wydany (dostępny w Spotify, Apple Music, YouTube i innych serwisach streamingowych)
+- **Brzmienie i opis:** Otwierająca dyskografię, tajemnicza kompozycja oparta na przestrzeni i niedopowiedzeniu. Ciche odgłosy deszczu w tle przeplatają się z oszczędną melodią, tworząc gęsty, deszczowy klimat.
+- **Historia powstania:** Narodził się z potrzeby przełożenia długo odkładanych pomysłów na pierwsze realne brzmienia. Jako pierwszy muzyczny eksperyment zachowuje pierwotną, surową formę otwartego szkicu – bez wygładzonego masteringu i zamkniętej struktury, zgodnie z tytułem („Nierozwiązany”).
+- **Okładka:** Autorskie zdjęcie chmur burzowych uchwycone z pokładu samolotu.
+
+#### 2. Far Lands (`https://situus.pl/#muzyka/far-lands`)
+- **Data powstania:** 20 sierpnia 2026 (5 dni po „Unsolved”)
+- **Status:** Wydany (dostępny w Spotify, Apple Music, YouTube i innych serwisach streamingowych)
+- **Brzmienie i opis:** Druga kompozycja w dorobku, wyraźnie skręcająca w stronę nostalgicznej estetyki inspirowanej ścieżką dźwiękową z Minecrafta. Łączy wyciszoną, przestrzenną bazę z bardziej zdecydowanym, dynamicznym refrenem, który przełamuje spokojny bieg melodii i nadaje całości wyraźniejszy rytm.
+- **Historia powstania:** Powstał krótko po debiutanckim „Unsolved”. Zachowuje surowy charakter wczesnych nagrań i prosty mastering, ale stanowi wyraźny krok naprzód – bardziej spójną próbę uchwycenia klimatu, który stał się głównym kierunkiem kolejnych projektów.
+- **Okładka:** Kadr z gry Minecraft przedstawiający skąpaną w deszczu wioskę.
+
+#### 3. Unfinished Maps (`https://situus.pl/#muzyka/unfinished-maps`)
+- **Data powstania:** 24 sierpnia 2026 (4 dni po „Far Lands”)
+- **Status:** Czeka na wydanie (w trakcie dopracowywania przed oficjalną premierą w serwisach streamingowych)
+- **Odsłuch na stronie:** Dostępny 30-sekundowy roboczy fragment (`https://situus.pl/audio/unfinished-maps-preview.mp3`) z zaznaczeniem, że przed premierą utwór będzie jeszcze dopracowywany.
+- **Brzmienie i opis:** Spokojna, wyciszona kompozycja najpełniej zanurzona w estetyce inspirowanej twórczością C418 oraz klasycznym klimatem Minecrafta. Balansuje na granicy lekkiego smutku i głębokiej nostalgii, przełamując je subtelną nutą nadziei. W tle ponownie słychać delikatny szum deszczu spajający przestrzeń.
+- **Historia powstania i okładka:** Utwór powstał na fali tego samego przypływu weny co dwa pierwsze nagrania. Pomysł na obecną okładkę – przekształcenie kadru deszczowej wioski z „Far Lands” w pikselową mapę z gry z charakterystyczną obwódką i paletą barw – pojawił się we śnie i został zrealizowany od razu po przebudzeniu. Przed oficjalną premierą brzmienie utworu będzie jeszcze szlifowane, a w planach jest też potencjalne odświeżenie okładki na zupełnie nowe ujęcie, całkowicie niezależne od „Far Lands”, lecz nadal utrzymane w motywie mapy.
+
+#### 4. Submerged (`https://situus.pl/#muzyka/submerged`)
+- **Data rozpoczęcia prac:** od 4 października 2026 (41 dni po „Unfinished Maps”)
+- **Status:** W trakcie tworzenia (faza produkcji, dobór finalnego miksu i dopieszczanie detali)
+- **Odsłuch na stronie:** Dostępny 30-sekundowy roboczy fragment (`https://situus.pl/audio/submerged-preview.mp3`) z zaznaczeniem, że utwór jest w produkcji i może jeszcze ulec dużym zmianom.
+- **Brzmienie i opis:** Głęboko klimatyczna kompozycja przenosząca słuchacza pod powierzchnię wody – do wnętrza podwodnej bazy zamkniętej w kopułach. Oddaje wyciszony nastrój głębin i kojące poczucie spokoju, wyróżniając się znacznie bogatszą przestrzenią, głębią oraz dojrzalszym brzmieniem na tle wcześniejszych publikacji.
+- **Historia powstania:** Impulsem była podwodna baza w kopułach zbudowana ze znajomymi na wspólnym serwerze Minecrafta (widoczna również na tapecie strony situus.pl). Pierwsze szkice powstały późną nocą pod wpływem chwili, a projekt przeszedł od tego czasu wiele wersji, zmian wtyczek i przebudowę brzmień. Jako jeden z pierwszych utworów stworzonych w 100% w FL Studio stanowi mocny przeskok jakościowy.
+
+## Dodatkowe projekty: Narzędzia webowe (`https://situus.pl/#narzedzia`)
+
+Oprócz muzyki na stronie znajdują się odnośniki do dwóch autorskich narzędzi webowych działających na osobnych subdomenach `situus.pl`:
+
+- **[Messenger Wrapped](https://wrapped.situus.pl/)** (`https://situus.pl/#narzedzia/wrapped`): darmowe narzędzie pokazujące statystyki rozmów z Messengera (np. kto pisał najwięcej w minionym roku). Użytkownik pobiera eksport danych z Facebooka w formacie JSON i wgrywa go na stronie – cała analiza odbywa się lokalnie w przeglądarce, a plik nie jest nigdzie wysyłany i nie opuszcza urządzenia.
+- **[Situus Chat](https://chat.situus.pl/)** (`https://situus.pl/#narzedzia/chat`): eksperymentalny, prywatny czat oparty na modelu językowym (LLM). Nie jest publicznie otwarty – działa wyłącznie na zaufanych urządzeniach i dla osób, które otrzymały zaproszenie od autora (można poprosić o dostęp mailowo). Strona główna wyświetla na żywo status serwera czatu.
+
+## Kontakt (`https://situus.pl/#kontakt`)
+
+- E-mail: situs1235@gmail.com (sprawy związane z muzyką, pytania o narzędzia lub prośby o dostęp do Situus Chat).
