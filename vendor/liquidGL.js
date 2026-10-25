@@ -5655,6 +5655,7 @@ fn fs() -> @location(0) vec4<f32> {
         Math.min(3.0, snapshotResolution),
       );
       this._pendingReveal = [];
+      this.canvas.style.opacity = "0";
 
       this._resizeCanvas();
       this.captureSnapshot();
@@ -5672,8 +5673,6 @@ fn fs() -> @location(0) vec4<f32> {
       this._videoFrameState = new WeakMap();
 
       this._videoAlphaState = new WeakMap();
-
-      this.canvas.style.opacity = "0";
 
       this.useExternalTicker = false;
 
@@ -5725,47 +5724,48 @@ fn fs() -> @location(0) vec4<f32> {
     }
 
     /* ----------------------------- */
-    async _selectBackend() {
+    _selectBackend() {
       const chain = ENGINE_CHAINS[this._engine] || ENGINE_CHAINS.auto;
-      let backend = null;
-
-      if (chain[0] === "webgpu") {
-        try {
-          backend = await WebGPUBackend.create(this.canvas);
-        } catch (e) {
-          backend = null;
+      const finish = (backend) => {
+        if (this._destroyed) {
+          destroyBackend(backend);
+          return false;
         }
-      }
-
-      if (this._destroyed) {
-        destroyBackend(backend);
-        return false;
-      }
-      if (!backend) {
-        const glChain = chain.filter((c) => c !== "webgpu");
-        if (glChain.length) {
-          try {
-            backend = new WebGLBackend(this.canvas, glChain);
-          } catch (e) {
-            backend = null;
+        if (!backend) {
+          const glChain = chain.filter((c) => c !== "webgpu");
+          if (glChain.length) {
+            try {
+              backend = new WebGLBackend(this.canvas, glChain);
+            } catch (e) {
+              backend = null;
+            }
           }
         }
+
+        this.backend = backend;
+
+        if (!backend) {
+          this._backendFailed = true;
+          console.warn(
+            "liquidGL: No GPU backend available – lenses will keep their original styles.",
+          );
+          return false;
+        }
+
+        backend.renderer = this;
+        if (this.hasTexture) {
+          const pending = this._pendingLensActivation.splice(0);
+          pending.forEach((ln) => ln._activate());
+        }
+        return true;
+      };
+
+      if (chain[0] === "webgpu") {
+        return WebGPUBackend.create(this.canvas)
+          .catch(() => null)
+          .then(finish);
       }
-
-      this.backend = backend;
-
-      if (!backend) {
-        this._backendFailed = true;
-        console.warn(
-          "liquidGL: No GPU backend available – lenses will keep their original styles.",
-        );
-        return false;
-      }
-
-      backend.renderer = this;
-      const pending = this._pendingLensActivation.splice(0);
-      pending.forEach((ln) => ln._activate());
-      return true;
+      return Promise.resolve(finish(null));
     }
 
     /* ----------------------------- */
@@ -5786,9 +5786,125 @@ fn fs() -> @location(0) vec4<f32> {
     }
 
     /* ----------------------------- */
+    _computeSnapshotConfig() {
+      const fullW = this.snapshotTarget.scrollWidth;
+      const fullH = this.snapshotTarget.scrollHeight;
+      const maxTex = (this.backend && this.backend.maxTextureSize) || 8192;
+
+      let scale = Math.min(
+        this._snapshotResolution,
+        maxTex / fullW,
+        maxTex / fullH,
+      );
+
+      const maxArea = maxTex * maxTex;
+      if (fullW * fullH * scale * scale > maxArea) {
+        scale = Math.sqrt(maxArea / (fullW * fullH));
+        console.warn(
+          `liquidGL: snapshot area capped, resolution reduced to ${scale.toFixed(
+            3,
+          )} for a ${fullW}x${fullH} document.`,
+        );
+      }
+
+      this.scaleFactor = Math.max(0.1, scale);
+
+      const lensElements = new Set(
+        Array.from(renderers)
+          .flatMap((renderer) => renderer.lenses)
+          .flatMap((lens) => [
+            lens.el,
+            lens._shadowEl,
+            lens.options.content && lens._contentRoot,
+          ])
+          .filter(Boolean),
+      );
+
+      const ignoreElementsFunc = (element) => {
+        if (!element || !element.hasAttribute) return false;
+        if (element === this.canvas) {
+          return true;
+        }
+        return (
+          element.hasAttribute("data-liquid-ignore") ||
+          element.closest("[data-liquid-ignore]")
+        );
+      };
+
+      const naughtyIgnore = (el) =>
+        ignoreElementsFunc(el) || lensElements.has(el);
+
+      let backgroundColor = null;
+      if (
+        this.snapshotTarget === document.body ||
+        this.snapshotTarget === document.documentElement
+      ) {
+        const rootStyle = window.getComputedStyle(document.documentElement);
+        let color = parseTintColor(rootStyle.backgroundColor);
+        if (!color?.[3] && rootStyle.backgroundImage === "none") {
+          color = parseTintColor(
+            window.getComputedStyle(document.body).backgroundColor,
+          );
+        }
+        const [r, g, b, a] = color || [1, 1, 1, 1];
+        backgroundColor = `rgb(${[r, g, b].map((channel) => (channel * a + 1 - a) * 255).join(",")})`;
+      }
+
+      return { fullW, fullH, scale, backgroundColor, naughtyIgnore };
+    }
+
     async captureSnapshot() {
       if (this._destroyed || this._capturing) return;
       this._capturing = true;
+
+      if (this.backend) {
+        const generation = this._captureGeneration || 0;
+        try {
+          const { fullW, fullH, scale, backgroundColor, naughtyIgnore } =
+            this._computeSnapshotConfig();
+          const cache = this.snapshotTarget._liquidSnapCache;
+          const now = performance.now();
+          let snapCanvas = null;
+          if (
+            cache &&
+            cache.w === fullW &&
+            cache.h === fullH &&
+            cache.scale === scale &&
+            cache.bg === backgroundColor &&
+            now - cache.time < 150
+          ) {
+            snapCanvas = cache.canvas;
+          } else {
+            const opts = {
+              width: fullW,
+              height: fullH,
+              scale,
+              backgroundColor,
+              ignoreElements: naughtyIgnore,
+            };
+            const plan = NaughtyDOM.measure(this.snapshotTarget, opts);
+            if (plan && plan.assets.length === 0) {
+              snapCanvas = NaughtyDOM.paint(plan, opts);
+              this.snapshotTarget._liquidSnapCache = {
+                canvas: snapCanvas,
+                w: fullW,
+                h: fullH,
+                scale,
+                bg: backgroundColor,
+                time: now,
+              };
+            }
+          }
+          if (snapCanvas && this._uploadTexture(snapCanvas, !!backgroundColor)) {
+            this._capturing = false;
+            if (!this._destroyed && generation !== (this._captureGeneration || 0))
+              this.captureSnapshot();
+            return true;
+          }
+        } catch (e) {
+          /* fall through to async capture */
+        }
+      }
 
       const ready = await this._backendReady;
       if (!ready || this._destroyed) {
@@ -5804,68 +5920,8 @@ fn fs() -> @location(0) vec4<f32> {
         if (this._destroyed) return false;
         const generation = this._captureGeneration || 0;
         try {
-          const fullW = this.snapshotTarget.scrollWidth;
-          const fullH = this.snapshotTarget.scrollHeight;
-          const maxTex = (this.backend && this.backend.maxTextureSize) || 8192;
-
-          let scale = Math.min(
-            this._snapshotResolution,
-            maxTex / fullW,
-            maxTex / fullH,
-          );
-
-          const maxArea = maxTex * maxTex;
-          if (fullW * fullH * scale * scale > maxArea) {
-            scale = Math.sqrt(maxArea / (fullW * fullH));
-            console.warn(
-              `liquidGL: snapshot area capped, resolution reduced to ${scale.toFixed(
-                3,
-              )} for a ${fullW}x${fullH} document.`,
-            );
-          }
-
-          this.scaleFactor = Math.max(0.1, scale);
-
-          const lensElements = new Set(
-            Array.from(renderers)
-              .flatMap((renderer) => renderer.lenses)
-              .flatMap((lens) => [
-                lens.el,
-                lens._shadowEl,
-                lens.options.content && lens._contentRoot,
-              ])
-              .filter(Boolean),
-          );
-
-          const ignoreElementsFunc = (element) => {
-            if (!element || !element.hasAttribute) return false;
-            if (element === this.canvas) {
-              return true;
-            }
-            return (
-              element.hasAttribute("data-liquid-ignore") ||
-              element.closest("[data-liquid-ignore]")
-            );
-          };
-
-          const naughtyIgnore = (el) =>
-            ignoreElementsFunc(el) || lensElements.has(el);
-
-          let backgroundColor = null;
-          if (
-            this.snapshotTarget === document.body ||
-            this.snapshotTarget === document.documentElement
-          ) {
-            const rootStyle = window.getComputedStyle(document.documentElement);
-            let color = parseTintColor(rootStyle.backgroundColor);
-            if (!color?.[3] && rootStyle.backgroundImage === "none") {
-              color = parseTintColor(
-                window.getComputedStyle(document.body).backgroundColor,
-              );
-            }
-            const [r, g, b, a] = color || [1, 1, 1, 1];
-            backgroundColor = `rgb(${[r, g, b].map((channel) => (channel * a + 1 - a) * 255).join(",")})`;
-          }
+          const { fullW, fullH, scale, backgroundColor, naughtyIgnore } =
+            this._computeSnapshotConfig();
           const snapCanvas = await NaughtyDOM.rasteriseAsync(
             this.snapshotTarget,
             {
@@ -5876,6 +5932,14 @@ fn fs() -> @location(0) vec4<f32> {
               ignoreElements: naughtyIgnore,
             },
           );
+          this.snapshotTarget._liquidSnapCache = {
+            canvas: snapCanvas,
+            w: fullW,
+            h: fullH,
+            scale,
+            bg: backgroundColor,
+            time: performance.now(),
+          };
 
           if (this._destroyed || generation !== (this._captureGeneration || 0))
             return false;
@@ -5951,6 +6015,10 @@ fn fs() -> @location(0) vec4<f32> {
       }
 
       this.hasTexture = true;
+      if (this._pendingLensActivation.length) {
+        const pending = this._pendingLensActivation.splice(0);
+        pending.forEach((ln) => ln._activate());
+      }
       wake(1000); // situus.pl: nowy zrzut tła trzeba narysować
       this._snapshotOpaque = opaque;
       this._renderSignature = null;
@@ -6091,7 +6159,7 @@ fn fs() -> @location(0) vec4<f32> {
         }
       }
 
-      if (this.backend) {
+      if (this.backend && this.hasTexture) {
         lens._activate();
       } else {
         this._pendingLensActivation.push(lens);
@@ -8365,7 +8433,7 @@ fn fs() -> @location(0) vec4<f32> {
     _reveal() {
       if (this._destroyed || !this._activated) return;
       if (this.revealTypeIndex === 0) {
-        this.el.style.opacity = this.originalOpacity || 1;
+        this.el.style.opacity = this.originalOpacity;
         this.renderer.canvas.style.opacity = "1";
         this._revealProgress = 1;
         this._TriggerInit();
@@ -8924,6 +8992,7 @@ fn fs() -> @location(0) vec4<f32> {
       }
       return lens;
     });
+    renderAll();
     startRendering();
 
     if (options.helper) {

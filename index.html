@@ -342,7 +342,9 @@
         }
 
         /* Litery rysuje szkło (glass-text.js); tekst zostaje dla czytników i zaznaczania */
-        .mark h1.has-glass { color: transparent; -webkit-text-fill-color: transparent; text-shadow: none; }
+        .mark h1.has-glass,
+        .js:not(.no-glass) .mark h1:not(.has-glass) { color: transparent; -webkit-text-fill-color: transparent; text-shadow: none; }
+        .js.glass-wait .top, .js.glass-wait .views { opacity: 0; }
 
         .home-widgets {
             width: 100%;
@@ -1172,7 +1174,7 @@
     <div class="scene" aria-hidden="true">
         <picture>
             <source media="(max-width: 700px)" srcset="img/situus-tlo-1280.webp">
-            <img src="img/situus-tlo.webp" alt="" width="2560" height="1441" decoding="async" fetchpriority="high">
+            <img src="img/situus-tlo.webp" alt="" width="2560" height="1441" fetchpriority="high">
         </picture>
         <div class="scene-shade"></div>
     </div>
@@ -2047,8 +2049,7 @@
                 if (instant || reduced || !prev) {
                     prev?.classList.remove('is-on');
                     next.classList.add('is-on');
-                    if (!reduced) animateGlass(cascade(next) * 55 + 800);
-                    else animateGlass(200);
+                    animateGlass(200);
                 } else {
                     prev.classList.add('is-leaving', leave);
                     next.classList.add('is-on');
@@ -2330,18 +2331,26 @@
                 });
             }
 
+            let glassStarted = false;
             function startGlass() {
-                if (lowTransparency) return;
+                if (glassStarted) return;
+                glassStarted = true;
+                document.documentElement.classList.remove('glass-wait');
+                if (lowTransparency) {
+                    document.documentElement.classList.add('no-glass');
+                    return;
+                }
 
                 if (typeof liquidGL === 'function') {
                     // Fotografujemy tylko tapetę, treść zostaje w DOM-ie.
                     // W naszej łatce: refraction = grubość szkła względem fazy, bevelDepth = stromość krawędzi.
                     const base = {
                         snapshot: '.scene',
+                        engine: 'webgl2',
                         content: false,
-                        resolution: 2,
+                        resolution: Math.min(2, (window.devicePixelRatio || 1) * 1.25),
                         zIndex: 10,
-                        reveal: reduced ? 'none' : 'fade',
+                        reveal: 'none',
                         specular: true,
                         shadow: true,
                         refraction: 1.3,
@@ -2377,19 +2386,37 @@
                     });
                 }
 
-                // Szklany napis Situus
+                // Szklany napis Situus – inicjalizowany synchronicznie razem z kartami
                 const h1 = document.querySelector('.mark h1');
-                const family = getComputedStyle(h1).fontFamily;
-                const fontReady = document.fonts ? document.fonts.load(`800 100px ${family}`).catch(() => {}) : Promise.resolve();
-                Promise.all([fontReady, sceneImg.decode?.().catch(() => {})]).then(() => {
-                    glassText = window.situusGlassText?.(h1, sceneImg) || null;
-                    animateGlass(400);
-                });
+                glassText = window.situusGlassText?.(h1, sceneImg) || null;
+                if (!glassText) document.documentElement.classList.add('no-glass');
+                if (document.fonts) {
+                    const family = getComputedStyle(h1).fontFamily;
+                    document.fonts.load(`800 100px ${family}`).then(() => {
+                        glassText?.invalidate?.();
+                    }).catch(() => {});
+                }
+                animateGlass(400);
             }
 
-            const boot = () => localBackground().then(startGlass);
-            if (document.readyState === 'complete') boot();
-            else addEventListener('load', boot, { once: true });
+            if (location.protocol !== 'file:' && sceneImg.complete && sceneImg.naturalWidth > 0) {
+                startGlass();
+            } else {
+                if (!lowTransparency) document.documentElement.classList.add('glass-wait');
+                const waitTimer = setTimeout(() => document.documentElement.classList.remove('glass-wait'), 180);
+                const whenSceneReady = () => {
+                    clearTimeout(waitTimer);
+                    startGlass();
+                };
+                if (location.protocol === 'file:') {
+                    localBackground().then(whenSceneReady);
+                } else if (sceneImg.complete) {
+                    whenSceneReady();
+                } else {
+                    sceneImg.addEventListener('load', whenSceneReady, { once: true });
+                    sceneImg.addEventListener('error', whenSceneReady, { once: true });
+                }
+            }
         })();
     </script>
 </body>

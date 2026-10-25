@@ -353,6 +353,6 @@
 
         canvas.addEventListener('webglcontextlost', e => e.preventDefault());
         render();
-        return { render, canvas };
+        return { render, invalidate() { key = ''; render(); }, canvas };
     };
 })();
