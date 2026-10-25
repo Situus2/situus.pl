@@ -46,10 +46,25 @@ const liquidGL = (() => {
   window.addEventListener("scroll", () => wake(500), { passive: true, capture: true });
 
   // situus.pl: łączna przezroczystość tafli i jej rodziców (strona animuje je przy zmianie zakładek)
+  let fadeCacheFrame = -1;
+  let fadeCache = new WeakMap();
+  const nodeOpacity = (el) => {
+    if (fadeCacheFrame !== renderFrame) {
+      fadeCacheFrame = renderFrame;
+      fadeCache = new WeakMap();
+    }
+    let op = fadeCache.get(el);
+    if (op === undefined) {
+      op = parseFloat(getComputedStyle(el).opacity);
+      if (!Number.isFinite(op)) op = 1;
+      fadeCache.set(el, op);
+    }
+    return op;
+  };
   const parentFade = (el) => {
     let fade = 1;
     for (let n = el; n && n !== document.body; n = n.parentElement) {
-      fade *= parseFloat(getComputedStyle(n).opacity) || 0;
+      fade *= nodeOpacity(n);
       if (fade <= 0) return 0;
     }
     return fade;
@@ -5544,7 +5559,10 @@ fn fs() -> @location(0) vec4<f32> {
       this._cleanups = [];
       this._naughtyQueued = false;
       this.canvas = document.createElement("canvas");
-      this.canvas.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;`;
+      // situus.pl: na body płótno jest przyklejone do ekranu (position:fixed),
+      // dzięki czemu na telefonach nie musi gonić przewijania przez zmianę style.top w każdej klatce.
+      const canvasPos = anchor === document.body ? "fixed" : "absolute";
+      this.canvas.style.cssText = `position:${canvasPos};top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;`;
       this.canvas.setAttribute("data-liquid-ignore", "");
       this._anchor.appendChild(this.canvas);
 
@@ -5570,25 +5588,23 @@ fn fs() -> @location(0) vec4<f32> {
 
       this._isScrolling = false;
       this._pendingViewportResize = false;
-      let lastScrollY = window.scrollY;
       let scrollTimeout;
-      const scrollCheck = () => {
+      const onScrollActivity = () => {
         if (this._destroyed) return;
-        if (window.scrollY !== lastScrollY) {
-          this._isScrolling = true;
-          lastScrollY = window.scrollY;
-          clearTimeout(scrollTimeout);
-          scrollTimeout = setTimeout(() => {
-            this._isScrolling = false;
-            if (this._pendingViewportResize) {
-              this._pendingViewportResize = false;
-              onResize();
-            }
-          }, 200);
-        }
-        this._scrollRaf = requestAnimationFrame(scrollCheck);
+        this._isScrolling = true;
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          this._isScrolling = false;
+          if (this._pendingViewportResize) {
+            this._pendingViewportResize = false;
+            onResize();
+          }
+        }, 200);
       };
-      this._scrollRaf = requestAnimationFrame(scrollCheck);
+      listen(this, window, "scroll", onScrollActivity, {
+        passive: true,
+        capture: true,
+      });
 
       const onResize = debounce(() => {
         if (this._destroyed || this._capturing) return;
@@ -5613,7 +5629,17 @@ fn fs() -> @location(0) vec4<f32> {
 
         this._resizeCanvas();
         this.lenses.forEach((l) => l.updateMetrics());
-        this.captureSnapshot();
+        const snapW = this.snapshotTarget.scrollWidth;
+        const snapH = this.snapshotTarget.scrollHeight;
+        if (
+          !this.hasTexture ||
+          snapW !== this._lastSnapW ||
+          snapH !== this._lastSnapH
+        ) {
+          this.captureSnapshot();
+        } else {
+          this.render();
+        }
       }, RECAPTURE_INTERVAL_MS);
       listen(
         this,
@@ -5628,7 +5654,6 @@ fn fs() -> @location(0) vec4<f32> {
       this._cleanups.push(() => {
         clearTimeout(scrollTimeout);
         onResize.cancel();
-        cancelAnimationFrame(this._scrollRaf);
       });
 
       if ("ResizeObserver" in window) {
@@ -5769,13 +5794,23 @@ fn fs() -> @location(0) vec4<f32> {
     }
 
     /* ----------------------------- */
-    _resizeCanvas() {
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
+    _getCanvasCssSize() {
       const viewportWidth = document.documentElement.clientWidth || innerWidth;
-      const viewportHeight = Math.max(
+      const fullHeight = Math.max(
         document.documentElement.clientHeight,
         innerHeight,
+        this.snapshotTarget?.clientHeight || 0,
       );
+      const viewportHeight =
+        this._anchor !== document.body
+          ? Math.min(fullHeight, Math.max(96, (this._anchor.offsetHeight || 72) + 24))
+          : fullHeight;
+      return { viewportWidth, viewportHeight };
+    }
+
+    _resizeCanvas() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const { viewportWidth, viewportHeight } = this._getCanvasCssSize();
       const width = Math.trunc(viewportWidth * dpr);
       const height = Math.trunc(viewportHeight * dpr);
       if (this.canvas.width !== width) this.canvas.width = width;
@@ -5789,6 +5824,8 @@ fn fs() -> @location(0) vec4<f32> {
     _computeSnapshotConfig() {
       const fullW = this.snapshotTarget.scrollWidth;
       const fullH = this.snapshotTarget.scrollHeight;
+      this._lastSnapW = fullW;
+      this._lastSnapH = fullH;
       const maxTex = (this.backend && this.backend.maxTextureSize) || 8192;
 
       let scale = Math.min(
@@ -6143,6 +6180,11 @@ fn fs() -> @location(0) vec4<f32> {
             (a.options.zIndex ?? 0) - (b.options.zIndex ?? 0) ||
             a._order - b._order,
         );
+      for (const a of this.lenses) {
+        a._isStackBase = this.lenses.some(
+          (b) => b !== a && a.el.contains(b.el),
+        );
+      }
 
       this._updateZIndex();
       if (element !== this._anchor) {
@@ -6252,6 +6294,9 @@ fn fs() -> @location(0) vec4<f32> {
             );
           }
         }
+        for (const renderer of ordered) {
+          renderer._originRect = renderer.canvas.getBoundingClientRect();
+        }
         for (const lens of lenses) lens.updateMetrics();
         for (const renderer of ordered) {
           renderer._sceneLenses = lenses;
@@ -6291,8 +6336,18 @@ fn fs() -> @location(0) vec4<f32> {
             renderer.canvas.style.visibility = active ? "visible" : "hidden";
           }
           if (!active) continue;
-          if (renderer._needsFrame(lower)) renderer._renderFrame(lower);
-          lower.push(renderer);
+          const usesLower =
+            renderer._contentLayers.length > 0 ||
+            renderer.lenses.some((l) => l.options.content !== false);
+          const effectiveLower = usesLower ? lower : [];
+          if (renderer._needsFrame(effectiveLower))
+            renderer._renderFrame(effectiveLower);
+          if (
+            renderer._contentLayers.length > 0 ||
+            renderer.lenses.some((l) => l.options.content !== false)
+          ) {
+            lower.push(renderer);
+          }
         }
       } finally {
         for (const lens of tiltMeasurements) {
@@ -6482,22 +6537,25 @@ fn fs() -> @location(0) vec4<f32> {
       const backend = this.backend;
 
       const dprNow = Math.min(2, window.devicePixelRatio || 1);
-      const bufW = Math.trunc(
-        (document.documentElement.clientWidth || innerWidth) * dprNow,
-      );
-      const bufH = Math.trunc(
-        Math.max(document.documentElement.clientHeight, innerHeight) * dprNow,
-      );
+      const { viewportWidth, viewportHeight } = this._getCanvasCssSize();
+      const bufW = Math.trunc(viewportWidth * dprNow);
+      const bufH = Math.trunc(viewportHeight * dprNow);
       if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
         this._resizeCanvas();
       }
 
-      const canvasRect = this.canvas.getBoundingClientRect();
-      if (canvasRect.left || canvasRect.top) {
+      const canvasRect =
+        this._originRect || this.canvas.getBoundingClientRect();
+      if (
+        this._anchor !== document.body &&
+        (canvasRect.left || canvasRect.top)
+      ) {
         this.canvas.style.left = `${parseFloat(this.canvas.style.left) - canvasRect.left}px`;
         this.canvas.style.top = `${parseFloat(this.canvas.style.top) - canvasRect.top}px`;
+        this._frameCanvasRect = this.canvas.getBoundingClientRect();
+      } else {
+        this._frameCanvasRect = canvasRect;
       }
-      this._frameCanvasRect = this.canvas.getBoundingClientRect();
 
       if (this._isScrolling) {
         this._scrollUpdateCounter++;
@@ -6902,7 +6960,9 @@ fn fs() -> @location(0) vec4<f32> {
         if (ex > sx && ey > sy)
           stackRegion = { x: sx, y: sy, w: ex - sx, h: ey - sy };
       }
-      prior.push({ x, y, w, h });
+      if (lens._isStackBase) {
+        prior.push({ x, y, w, h });
+      }
       // situus.pl: szkło gaśnie razem z rodzicem (zakładki strony przenikają się przez opacity)
       const fade = parentFade(lens.el);
       if (lens._shadowEl)
@@ -8095,8 +8155,9 @@ fn fs() -> @location(0) vec4<f32> {
       if (typeof ResizeObserver !== "undefined" && !this._sizeObs) {
         this._sizeObs = new ResizeObserver(() => {
           if (this._destroyed) return;
+          this._cachedBrKey = null;
           this.updateMetrics();
-          this.renderer.render();
+          wake(250);
         });
         this._sizeObs.observe(this.el);
       }
@@ -8110,7 +8171,9 @@ fn fs() -> @location(0) vec4<f32> {
           ? this._baseRect
           : this.el.getBoundingClientRect();
 
-      const origin = this.renderer.canvas.getBoundingClientRect();
+      const origin =
+        this.renderer._originRect ||
+        this.renderer.canvas.getBoundingClientRect();
       const vpX = -origin.left;
       const vpY = -origin.top;
 
@@ -8126,6 +8189,8 @@ fn fs() -> @location(0) vec4<f32> {
       ) {
         return;
       }
+      const sizeChanged =
+        !prev || rect.width !== prev.width || rect.height !== prev.height;
       this._vpOffsetX = vpX;
       this._vpOffsetY = vpY;
 
@@ -8136,23 +8201,29 @@ fn fs() -> @location(0) vec4<f32> {
         height: rect.height,
       };
 
-      const style = window.getComputedStyle(this.el);
-      const brRaw = style.borderTopLeftRadius.split(" ")[0];
-      const isPct = brRaw.trim().endsWith("%");
-      let brPx;
-      if (isPct) {
-        const pct = parseFloat(brRaw);
-        brPx = (Math.min(rect.width, rect.height) * pct) / 100;
-      } else {
-        brPx = parseFloat(brRaw);
-      }
-      const maxAllowedCss = Math.min(rect.width, rect.height) * 0.5;
-      this.radiusCss = Math.min(brPx, maxAllowedCss);
-
       const dpr = Math.min(2, window.devicePixelRatio || 1);
-      this.radiusGl = this.radiusCss * dpr;
+      if (
+        (sizeChanged || this._cachedBrKey !== dpr) &&
+        rect.width > 0 &&
+        rect.height > 0
+      ) {
+        this._cachedBrKey = dpr;
+        const style = window.getComputedStyle(this.el);
+        const brRaw = style.borderTopLeftRadius.split(" ")[0];
+        const isPct = brRaw.trim().endsWith("%");
+        let brPx;
+        if (isPct) {
+          const pct = parseFloat(brRaw);
+          brPx = (Math.min(rect.width, rect.height) * pct) / 100;
+        } else {
+          brPx = parseFloat(brRaw);
+        }
+        const maxAllowedCss = Math.min(rect.width, rect.height) * 0.5;
+        this.radiusCss = Math.min(brPx, maxAllowedCss);
+        this.radiusGl = this.radiusCss * dpr;
+      }
 
-      if (this._shadowSyncFn) {
+      if (this._shadowSyncFn && this._shadowEl) {
         this._shadowSyncFn();
       }
     }
@@ -8400,7 +8471,10 @@ fn fs() -> @location(0) vec4<f32> {
       if (enabled) {
         this.el.style.boxShadow = SHADOW_VAL;
 
-        if (!this._shadowEl) {
+        // situus.pl: dodatkowy _shadowEl na document.body był potrzebny tylko w trybie
+        // przechylania 3D (_mirrorActive), a przy animacjach translateX wystawał poza ekran
+        // i na telefonach rozszerzał szerokość strony oraz górnego paska nawigacji.
+        if (this._mirrorActive && !this._shadowEl) {
           this._shadowEl = document.createElement("div");
           Object.assign(this._shadowEl.style, {
             position: "absolute",
@@ -8417,7 +8491,7 @@ fn fs() -> @location(0) vec4<f32> {
             passive: true,
           });
         }
-        syncShadow();
+        if (this._shadowEl) syncShadow();
       } else {
         if (this._shadowEl) {
           window.removeEventListener("resize", this._shadowSyncFn);

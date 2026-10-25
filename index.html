@@ -94,7 +94,7 @@
     <script>document.documentElement.classList.add('js');</script>
 
     <style>
-        *, *::before, *::after { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         h1, h2, h3, h4, p, ul, ol, dl, dd { margin: 0; padding: 0; }
         ul, ol { list-style: none; }
         a { color: inherit; text-decoration: none; }
@@ -119,11 +119,12 @@
         }
 
         /* Strona działa jak aplikacja: bez paska przewijania, który przy przejściach zmieniał szerokość okna */
-        html { background: #0b0d1b; -webkit-text-size-adjust: 100%; scrollbar-width: none; }
+        html { background: #0b0d1b; -webkit-text-size-adjust: 100%; scrollbar-width: none; overflow-x: clip; }
         html::-webkit-scrollbar { display: none; }
 
         body {
             margin: 0;
+            overflow-x: clip;
             color: var(--ink);
             font: 400 15px/1.45 var(--sans);
             font-feature-settings: "cv11", "ss03";
@@ -2374,7 +2375,6 @@
                     liquidGL({
                         ...base,
                         target: '.tab-lens',
-                        zIndex: 12,
                         shadow: false,
                         reveal: 'none',
                         refraction: 1.5,
