@@ -1,0 +1,18 @@
+# Situus
+
+> Situus to pseudonim twórcy, który robi małe narzędzia webowe i wydaje muzykę. Na situus.pl są linki do jego projektów (Messenger Wrapped, Situus Chat) i informacje o utworach. Strona jest po polsku.
+
+Wszystkie narzędzia działają w przeglądarce, na osobnych subdomenach situus.pl. Kontakt: situs1235@gmail.com.
+
+## Narzędzia
+
+- [Messenger Wrapped](https://wrapped.situus.pl/): statystyki rozmów z Messengera. Użytkownik wgrywa eksport danych z Facebooka (plik JSON), a strona liczy statystyki lokalnie w przeglądarce – plik nie jest nigdzie wysyłany. Pokazuje m.in., kto pisał najwięcej w minionym roku. Darmowe.
+- [Situus Chat](https://chat.situus.pl/): eksperymentalny czat oparty na modelu językowym (LLM). Prywatny – działa tylko na zaufanych urządzeniach i dla osób, które dostały dostęp od autora. Nie jest publicznie dostępny.
+
+## Muzyka
+
+- Situus wydaje autorską muzykę pod tym samym pseudonimem (No AI). Wydane utwory: „Unsolved” i „Far Lands” (dostępne w Spotify, Apple Music, YouTube i innych serwisach). W przygotowaniu i dopracowywaniu są „Unfinished Maps” oraz „Submerged”, których robocze fragmenty można odsłuchać bezpośrednio na stronie.
+
+## Kontakt
+
+- E-mail: situs1235@gmail.com

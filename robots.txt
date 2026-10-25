@@ -1,0 +1,21 @@
+# situus.pl – wszystkie roboty, także AI, mogą czytać całą stronę.
+
+User-agent: *
+Allow: /
+
+# Roboty AI wymienione z nazwy, żeby było jasne, że też mają dostęp.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: CCBot
+User-agent: meta-externalagent
+Allow: /
+
+Sitemap: https://situus.pl/sitemap.xml
