@@ -6432,14 +6432,16 @@ fn fs() -> @location(0) vec4<f32> {
             renderer.canvas.style.visibility = active ? "visible" : "hidden";
           }
           if (!active) continue;
+          // situus.pl: pasek nie kopiuje płótna kart – na telefonie wczytanie całego płótna WebGL
+          // do drugiego kontekstu w każdej klatce zatyka GPU i szkło przy przewijaniu się trzęsie.
+          // Szkło kart pod paskiem dorysowuje tanio _drawBackdropStrip.
           const usesLower =
-            renderer._anchor !== document.body ||
             renderer._contentLayers.length > 0 ||
             renderer.lenses.some((l) => l.options.content !== false);
           const effectiveLower = usesLower ? lower : [];
           if (renderer._needsFrame(effectiveLower))
             renderer._renderFrame(effectiveLower);
-          lower.push(renderer);
+          if (usesLower) lower.push(renderer);
         }
       } finally {
         for (const lens of tiltMeasurements) {
@@ -6805,8 +6807,9 @@ fn fs() -> @location(0) vec4<f32> {
       if (!stripRect || stripRect.width <= 0 || stripRect.height <= 0) return;
       // situus.pl: treść pod paskiem malujemy w 1/5 rozdzielczości – po powiększeniu
       // jest rozmyta jak pod szkłem w iOS, nie gryzie się z napisami zakładek i maluje się szybciej
+      const scale = 0.2;
       const plan = NaughtyDOM.measure(viewsEl, {
-        scale: 0.2,
+        scale,
         viewportRect: {
           left: stripRect.left,
           top: stripRect.top,
@@ -6833,6 +6836,32 @@ fn fs() -> @location(0) vec4<f32> {
       stripCtx.globalCompositeOperation = "source-atop";
       stripCtx.fillStyle = "rgba(8, 10, 26, 0.4)";
       stripCtx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
+      // Szkło kart pod paskiem: jasna tafla pod treścią zamiast kopii płótna kart
+      stripCtx.globalCompositeOperation = "destination-over";
+      for (const lens of this._sceneLenses || []) {
+        const r = lens.rectPx;
+        if (lens.renderer === this || !r || r.width <= 0 || r.height <= 0)
+          continue;
+        const x = (r.left - stripRect.left) * scale;
+        const y = (r.top - stripRect.top) * scale;
+        if (y > stripCanvas.height || y + r.height * scale < 0) continue;
+        const fade = parentFade(lens.el);
+        if (fade <= 0.001) continue;
+        stripCtx.fillStyle = `rgba(255, 255, 255, ${0.07 * fade})`;
+        stripCtx.beginPath();
+        if (stripCtx.roundRect) {
+          stripCtx.roundRect(
+            x,
+            y,
+            r.width * scale,
+            r.height * scale,
+            (lens.radiusCss || 0) * scale,
+          );
+        } else {
+          stripCtx.rect(x, y, r.width * scale, r.height * scale);
+        }
+        stripCtx.fill();
+      }
       stripCtx.globalCompositeOperation = "source-over";
       const stripContent = (this._backdropStripContent ||= {
         canvas: stripCanvas,
