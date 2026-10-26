@@ -19,6 +19,8 @@ const liquidGL = (() => {
   if (typeof window === "undefined") return;
 
   const RECAPTURE_INTERVAL_MS = 250;
+  // situus.pl: zapas płótna kart nad i pod ekranem (ułamek wysokości ekranu) na szybkie przewijanie
+  const SCROLL_OVERSCAN = 0.25;
   const renderers = new Set();
   let lensOrder = 0;
   let rendering = false;
@@ -5622,10 +5624,7 @@ fn fs() -> @location(0) vec4<f32> {
       this._cleanups = [];
       this._naughtyQueued = false;
       this.canvas = document.createElement("canvas");
-      // situus.pl: na body płótno jest przyklejone do ekranu (position:fixed),
-      // dzięki czemu na telefonach nie musi gonić przewijania przez zmianę style.top w każdej klatce.
-      const canvasPos = anchor === document.body ? "fixed" : "absolute";
-      this.canvas.style.cssText = `position:${canvasPos};top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;`;
+      this.canvas.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;`;
       this.canvas.setAttribute("data-liquid-ignore", "");
       this._anchor.appendChild(this.canvas);
 
@@ -5864,11 +5863,44 @@ fn fs() -> @location(0) vec4<f32> {
         innerHeight,
         this.snapshotTarget?.clientHeight || 0,
       );
-      const viewportHeight =
-        this._anchor !== document.body
-          ? Math.min(fullHeight, Math.max(96, (this._anchor.offsetHeight || 72) + 24))
-          : fullHeight;
-      return { viewportWidth, viewportHeight };
+      if (this._anchor !== document.body) {
+        const viewportHeight = Math.min(
+          fullHeight,
+          Math.max(96, (this._anchor.offsetHeight || 72) + 24),
+        );
+        return { viewportWidth, viewportHeight };
+      }
+      // Płótno kart jest o zapas wyższe od ekranu, ale nie wystaje poza stronę – inaczej by ją wydłużało
+      const overscan = Math.round(fullHeight * SCROLL_OVERSCAN);
+      const pageHeight = Math.floor(
+        Math.max(
+          document.documentElement.clientHeight,
+          document.body.getBoundingClientRect().bottom + window.scrollY,
+        ),
+      );
+      const viewportHeight = Math.min(fullHeight + overscan * 2, pageHeight);
+      const top = Math.max(
+        0,
+        Math.min(Math.round(window.scrollY) - overscan, pageHeight - viewportHeight),
+      );
+      return { viewportWidth, viewportHeight, top };
+    }
+
+    // situus.pl: płótno kart leży na stronie i przewija się razem z nią. Telefon przesuwa stronę
+    // poza głównym wątkiem, więc płótno przyklejone do ekranu (position:fixed) spóźniało się
+    // za kartami i szkło trzęsło się przy przewijaniu jak galaretka.
+    _followScroll() {
+      const { viewportWidth, viewportHeight, top } = this._getCanvasCssSize();
+      if (
+        this.canvas.style.width !== `${viewportWidth}px` ||
+        this.canvas.style.height !== `${viewportHeight}px`
+      ) {
+        this._resizeCanvas();
+      }
+      const transform = `translate3d(0,${top}px,0)`;
+      if (this.canvas.style.transform !== transform) {
+        this.canvas.style.transform = transform;
+      }
     }
 
     _resizeCanvas() {
@@ -6358,6 +6390,7 @@ fn fs() -> @location(0) vec4<f32> {
           }
         }
         for (const renderer of ordered) {
+          if (renderer._anchor === document.body) renderer._followScroll();
           renderer._originRect = renderer.canvas.getBoundingClientRect();
         }
         for (const lens of lenses) lens.updateMetrics();
