@@ -137,6 +137,24 @@ const liquidGL = (() => {
     }
     backend._gpuContents?.delete(key);
   };
+  // situus.pl: WebGL sprawdzamy raz i od razu oddajemy kontekst testowy. Wcześniej każde
+  // wywołanie liquidGL() zostawiało własny – przy limicie 8 kontekstów na Androidzie
+  // przeglądarka odbierała wtedy najstarsze, czasem płótno kart.
+  const webglSupport = new Map();
+  const webglSupported = (names) => {
+    const key = names.join();
+    if (!webglSupport.has(key)) {
+      const testCanvas = document.createElement("canvas");
+      let gl = null;
+      for (const name of names) {
+        gl = testCanvas.getContext(name);
+        if (gl) break;
+      }
+      gl?.getExtension("WEBGL_lose_context")?.loseContext();
+      webglSupport.set(key, !!gl);
+    }
+    return webglSupport.get(key);
+  };
   const destroyBackend = (backend) => {
     if (!backend) return;
     for (const cache of [
@@ -5633,10 +5651,25 @@ fn fs() -> @location(0) vec4<f32> {
       this.canvas.setAttribute("data-liquid-ignore", "");
       this._anchor.appendChild(this.canvas);
       // situus.pl: telefon potrafi odebrać stronie WebGL (brak pamięci, przełączenie aplikacji).
-      // Wtedy wracamy do szkła z CSS, zamiast zostawiać przezroczyste karty.
-      listen(this, this.canvas, "webglcontextlost", () => {
-        for (const lens of this.lenses.slice()) lens.destroy();
-        this.destroy();
+      // Do czasu, aż go odda, karty mają szkło z CSS; potem budujemy backend od nowa.
+      listen(this, this.canvas, "webglcontextlost", (e) => {
+        e.preventDefault();
+        this.hasTexture = false;
+        for (const lens of this.lenses) {
+          if (!lens._activated) continue;
+          lens._restoreStyles?.();
+          lens._restoreStyles = null;
+          lens._activated = false;
+          this._pendingLensActivation.push(lens);
+          this._pendingReveal.push(lens);
+        }
+      });
+      listen(this, this.canvas, "webglcontextrestored", () => {
+        // Programy i tekstury przepadły razem ze starym kontekstem – starego backendu nie
+        // niszczymy, bo destroyBackend odebrałby też ten przywrócony
+        this.backend = null;
+        this._backendReady = this._selectBackend();
+        this.captureSnapshot();
       });
 
       this.backend = null;
@@ -9227,17 +9260,8 @@ fn fs() -> @location(0) vec4<f32> {
       chain[0] === "webgpu" &&
       typeof navigator !== "undefined" &&
       "gpu" in navigator;
-    let hasWebGL = false;
     const glChain = chain.filter((c) => c !== "webgpu");
-    if (glChain.length) {
-      const testCanvas = document.createElement("canvas");
-      for (const name of glChain) {
-        if (testCanvas.getContext(name)) {
-          hasWebGL = true;
-          break;
-        }
-      }
-    }
+    const hasWebGL = glChain.length > 0 && webglSupported(glChain);
     const noGPU = !hasWebGPU && !hasWebGL;
 
     if (window.__liquidGLNoWebGL__ === true || noGPU) {
