@@ -610,12 +610,44 @@ const liquidGL = (() => {
       const r = el.getBoundingClientRect();
       const computed = getComputedStyle(el);
       const paintSig = `${computed.color}|${computed.fill}|${computed.stroke}`;
-      const signature = `${el.outerHTML.length}|${el.childElementCount}|${Math.round(r.width)}x${Math.round(r.height)}|${el.className}|${paintSig}`;
+      const useHrefs = Array.from(el.querySelectorAll("use"))
+        .map((u) => u.getAttribute("href") || u.getAttribute("xlink:href") || "")
+        .join(",");
+      const signature = `${el.outerHTML.length}|${el.childElementCount}|${Math.round(r.width)}x${Math.round(r.height)}|${el.className}|${paintSig}|${useHrefs}`;
       const cached = svgCache.get(el);
       if (cached && cached.signature === signature) return cached.entry;
 
       const clone = el.cloneNode(true);
       inlineSvgStyles(el, clone);
+      const uses = clone.querySelectorAll("use");
+      if (uses.length) {
+        const defs = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "defs",
+        );
+        const added = new Set();
+        uses.forEach((u) => {
+          const href =
+            u.getAttribute("href") || u.getAttribute("xlink:href") || "";
+          if (href.startsWith("#")) {
+            const sym = document.getElementById(href.slice(1));
+            if (sym && !added.has(href)) {
+              added.add(href);
+              const ownerDefs =
+                sym.ownerSVGElement &&
+                sym.ownerSVGElement.querySelector("defs");
+              if (ownerDefs && !added.has("__owner_defs__")) {
+                added.add("__owner_defs__");
+                Array.from(ownerDefs.children).forEach((d) =>
+                  defs.appendChild(d.cloneNode(true)),
+                );
+              }
+              defs.appendChild(sym.cloneNode(true));
+            }
+          }
+        });
+        if (defs.childNodes.length) clone.insertBefore(defs, clone.firstChild);
+      }
       let html = new XMLSerializer().serializeToString(clone);
       if (
         !/^<svg[^>]*\swidth=/.test(html) ||
@@ -1126,13 +1158,39 @@ const liquidGL = (() => {
       }
     }
 
-    function buildNode(el, parent, clips, ignore) {
+    function buildNode(el, parent, clips, ignore, vp) {
       if (ignore && ignore(el)) return null;
       const style = getComputedStyle(el);
       if (style.display === "none") return null;
+      const opacity = parseFloat(style.opacity);
+      if (!isNaN(opacity) && opacity <= 0.001) return null;
+
+      const rect = el.getBoundingClientRect();
+      let inStrip = true;
+      if (vp) {
+        const vpBottom = vp.top + vp.height;
+        if (
+          parent &&
+          (rect.bottom < vp.top - 90 || rect.top > vpBottom + 90) &&
+          el.tagName !== "MAIN" &&
+          !el.classList.contains("view") &&
+          !el.classList.contains("subview") &&
+          !el.classList.contains("wrap") &&
+          !el.classList.contains("home") &&
+          !el.classList.contains("page")
+        ) {
+          return null;
+        }
+        inStrip =
+          rect.width > 0 &&
+          rect.height > 0 &&
+          rect.bottom >= vp.top - 24 &&
+          rect.top <= vpBottom + 24 &&
+          rect.right >= vp.left - 24 &&
+          rect.left <= vp.left + vp.width + 24;
+      }
 
       const size = borderBoxSize(el, style);
-      const rect = el.getBoundingClientRect();
       const B = parent ? parent.m : IDENT;
       const Blin = [B[0], B[1], B[2], B[3], 0, 0];
       const own = parseMatrix(style.transform);
@@ -1175,6 +1233,7 @@ const liquidGL = (() => {
       }
 
       const radii = parseRadii(style, size.w, size.h);
+      const isLowerGlass = Boolean(vp) && el.classList.contains("glass");
       const node = {
         el,
         style,
@@ -1185,13 +1244,14 @@ const liquidGL = (() => {
         m,
         radii,
         clips,
-        opacity: parseFloat(style.opacity),
+        opacity,
+        skipBox: !inStrip || isLowerGlass,
         untransformed: !own && (!parent || parent.untransformed),
         children: [],
-        runs: measureRuns(el, style),
+        runs: inStrip ? measureRuns(el, style) : [],
       };
 
-      discoverAssets(el, style);
+      if (inStrip) discoverAssets(el, style);
 
       if (
         CLIP_OVERFLOW.test(style.overflowX) ||
@@ -1228,16 +1288,16 @@ const liquidGL = (() => {
       };
     }
 
-    function collect(node, stack, ignore) {
+    function collect(node, stack, ignore, vp) {
       if (node.el.tagName === "svg") return;
       const kids = node.el.children;
       for (let i = 0; i < kids.length; i++) {
-        const child = buildNode(kids[i], node, node.childClips, ignore);
+        const child = buildNode(kids[i], node, node.childClips, ignore, vp);
         if (!child) continue;
         const cs = child.style;
         if (isStackingContext(child.el, cs)) {
           const sub = newStack(child);
-          collect(child, sub, ignore);
+          collect(child, sub, ignore, vp);
           const z =
             cs.position !== "static" && cs.zIndex !== "auto"
               ? parseInt(cs.zIndex, 10) || 0
@@ -1247,15 +1307,15 @@ const liquidGL = (() => {
           else stack.zeroOrAuto.push(sub);
         } else if (cs.position !== "static") {
           const sub = newStack(child);
-          collect(child, sub, ignore);
+          collect(child, sub, ignore, vp);
           stack.zeroOrAuto.push(sub);
         } else if (cs.float !== "none") {
           const sub = newStack(child);
-          collect(child, sub, ignore);
+          collect(child, sub, ignore, vp);
           stack.floats.push(sub);
         } else {
           node.children.push(child);
-          collect(child, stack, ignore);
+          collect(child, stack, ignore, vp);
         }
       }
     }
@@ -1913,7 +1973,7 @@ const liquidGL = (() => {
     function emitInFlowBoxes(node, out) {
       for (let i = 0; i < node.children.length; i++) {
         const child = node.children[i];
-        out.push({ t: OP_BOX, node: child });
+        if (!child.skipBox) out.push({ t: OP_BOX, node: child });
         emitInFlowBoxes(child, out);
       }
     }
@@ -1931,7 +1991,7 @@ const liquidGL = (() => {
       const fade = !isNaN(alpha) && alpha < 1;
       if (fade) out.push({ t: OP_ALPHA_PUSH, alpha });
 
-      out.push({ t: OP_BOX, node: stack.node });
+      if (!stack.node.skipBox) out.push({ t: OP_BOX, node: stack.node });
 
       const byZ = (a, b) => a.z - b.z;
       stack.negative.sort(byZ);
@@ -1986,20 +2046,23 @@ const liquidGL = (() => {
       const opts = options || {};
       const scale = opts.scale || 1;
       const ignore = opts.ignoreElements || null;
+      const vp = opts.viewportRect || null;
 
       pending = [];
-      const root = buildNode(element, null, [], ignore);
+      const root = buildNode(element, null, [], ignore, vp);
       if (!root) return null;
       if (opts.rootOpacity != null) root.opacity = opts.rootOpacity;
 
       const stack = newStack(root);
-      collect(root, stack, ignore);
+      collect(root, stack, ignore, vp);
 
       const ops = [];
       emitStack(stack, ops);
 
-      let base = [scale, 0, 0, scale, -root.x * scale, -root.y * scale];
-      if (!root.untransformed) {
+      let base = vp
+        ? [scale, 0, 0, scale, -vp.left * scale, -vp.top * scale]
+        : [scale, 0, 0, scale, -root.x * scale, -root.y * scale];
+      if (!vp && !root.untransformed) {
         const rootInv = invert(root.m);
         if (rootInv) base = mul(base, rootInv);
       }
@@ -2013,8 +2076,8 @@ const liquidGL = (() => {
         base,
         scale,
         assets,
-        width: opts.width != null ? opts.width : root.w,
-        height: opts.height != null ? opts.height : root.h,
+        width: vp ? vp.width : opts.width != null ? opts.width : root.w,
+        height: vp ? vp.height : opts.height != null ? opts.height : root.h,
         backgroundColor: opts.backgroundColor || null,
       };
     }
@@ -3096,7 +3159,7 @@ const liquidGL = (() => {
 
         float edgeFactor(vec2 p_px, vec2 b_px, float radius_px){
           float d = -udRoundBox(p_px, b_px, radius_px);
-          float bevel_px = u_bevelWidth * min(u_boxSize.x, u_boxSize.y);
+          float bevel_px = max(min(u_bevelWidth * min(u_boxSize.x, u_boxSize.y), radius_px), 1.0);
           return 1.0 - smoothstep(0.0, bevel_px, d);
         }
         void main(){
@@ -3126,7 +3189,7 @@ const liquidGL = (() => {
           // Promień pada pionowo, łamie się na szkle n = 1.5, przesunięcie liczone w pikselach.
           // u_refraction: grubość szkła względem fazy, u_bevelDepth: stromość krawędzi.
           float dIn = -sdRoundBox(p_px, b_px, u_radius);
-          float bevel = max(u_bevelWidth * min(u_boxSize.x, u_boxSize.y), 1.0);
+          float bevel = max(min(u_bevelWidth * min(u_boxSize.x, u_boxSize.y), u_radius), 1.0);
           float xb = clamp(dIn / bevel, 0.0, 1.0);
           float om = 1.0 - max(xb, 0.02);
           float dh = pow(om, 1.5) * pow(max(1.0 - pow(om, 2.5), 0.0001), -0.6);
@@ -3901,7 +3964,7 @@ fn deformPoint(point: vec2<f32>) -> vec2<f32> {
 
 fn edgeFactor(p_px: vec2<f32>, b_px: vec2<f32>, radius_px: f32) -> f32 {
   let d = -udRoundBox(p_px, b_px, radius_px);
-  let bevel_px = u.bevelWidth * min(u.boxSize.x, u.boxSize.y);
+  let bevel_px = max(min(u.bevelWidth * min(u.boxSize.x, u.boxSize.y), radius_px), 1.0);
   return 1.0 - smoothstep(0.0, bevel_px, d);
 }
 
@@ -3926,7 +3989,7 @@ fn fs(in: VSOut) -> @location(0) vec4<f32> {
 
   // situus.pl: załamanie jak w iOS – opis w wersji GLSL
   let dIn = -sdRoundBox(p_px, b_px, u.radius);
-  let bevel = max(u.bevelWidth * min(u.boxSize.x, u.boxSize.y), 1.0);
+  let bevel = max(min(u.bevelWidth * min(u.boxSize.x, u.boxSize.y), u.radius), 1.0);
   let xb = clamp(dIn / bevel, 0.0, 1.0);
   let om = 1.0 - max(xb, 0.02);
   let dh = pow(om, 1.5) * pow(max(1.0 - pow(om, 2.5), 0.0001), -0.6);
@@ -6337,17 +6400,13 @@ fn fs() -> @location(0) vec4<f32> {
           }
           if (!active) continue;
           const usesLower =
+            renderer._anchor !== document.body ||
             renderer._contentLayers.length > 0 ||
             renderer.lenses.some((l) => l.options.content !== false);
           const effectiveLower = usesLower ? lower : [];
           if (renderer._needsFrame(effectiveLower))
             renderer._renderFrame(effectiveLower);
-          if (
-            renderer._contentLayers.length > 0 ||
-            renderer.lenses.some((l) => l.options.content !== false)
-          ) {
-            lower.push(renderer);
-          }
+          lower.push(renderer);
         }
       } finally {
         for (const lens of tiltMeasurements) {
@@ -6380,6 +6439,7 @@ fn fs() -> @location(0) vec4<f32> {
           lens._revealProgress,
           lens._mirrorActive,
           lens._fluid?.value,
+          parentFade(lens.el),
         );
         const options = lens.options;
         if (lens.renderer === this)
@@ -6514,6 +6574,20 @@ fn fs() -> @location(0) vec4<f32> {
           meta && (meta._animating || meta.needsRecapture || meta._capturing)
         );
       });
+      if (this._anchor !== document.body) {
+        const activeView = document.querySelector(".view.is-on:not(.is-leaving), .view.is-active");
+        const leavingView = document.querySelector(".view.is-leaving");
+        const activeWrap = activeView?.querySelector(".home, .page, .wrap") || activeView?.firstElementChild;
+        const activeStyle = activeView ? getComputedStyle(activeView) : null;
+        state.push(
+          activeView?.id,
+          leavingView?.id,
+          activeStyle ? activeStyle.opacity : 1,
+          activeStyle ? activeStyle.transform : "none",
+          leavingView ? getComputedStyle(leavingView).opacity : 0,
+        );
+        if (activeWrap) rectState(activeWrap.getBoundingClientRect());
+      }
       const signature = JSON.stringify(state);
       const changed = signature !== this._renderSignature;
       this._renderSignature = signature;
@@ -6568,13 +6642,16 @@ fn fs() -> @location(0) vec4<f32> {
         this.canvas.width,
         this.canvas.height,
         time,
-        this._contentLayers.length > 0 || lower.length > 0,
+        this._anchor !== document.body ||
+          this._contentLayers.length > 0 ||
+          lower.length > 0,
       );
 
       if (this._updateDynamicVideos() !== false) this._updateDynamicNodes();
 
       this._frameSnapRect = this.snapshotTarget.getBoundingClientRect();
       this._frameLensRects = [];
+      this._allFrameLensRects = [];
 
       for (const renderer of lower) {
         for (const layer of renderer._contentLayers) {
@@ -6589,8 +6666,10 @@ fn fs() -> @location(0) vec4<f32> {
             renderer.canvas.height +
             (this._frameCanvasRect.top - renderer._frameCanvasRect.top) *
               dprNow;
+          const lowerRects =
+            renderer._allFrameLensRects || renderer._ownFrameLensRects || [];
           this._frameLensRects.push(
-            ...renderer._ownFrameLensRects.map((rect) => ({
+            ...lowerRects.map((rect) => ({
               ...rect,
               x: rect.x + dx,
               y: rect.y + dy,
@@ -6600,6 +6679,10 @@ fn fs() -> @location(0) vec4<f32> {
         for (const layer of renderer._contentLayers) {
           if (!layer.before) this._drawContentLayer(layer);
         }
+      }
+
+      if (this._anchor !== document.body) {
+        this._drawBackdropStrip(dprNow);
       }
 
       const ownStart = this._frameLensRects.length;
@@ -6675,6 +6758,53 @@ fn fs() -> @location(0) vec4<f32> {
         }
       });
       backend.clearRegions(clearRects);
+    }
+
+    _drawBackdropStrip(dpr) {
+      const viewsEl =
+        this._backdropRoot && this._backdropRoot.isConnected
+          ? this._backdropRoot
+          : (this._backdropRoot = document.querySelector(".views"));
+      if (!viewsEl) return;
+      const stripRect = this._frameCanvasRect;
+      if (!stripRect || stripRect.width <= 0 || stripRect.height <= 0) return;
+      const plan = NaughtyDOM.measure(viewsEl, {
+        scale: dpr,
+        viewportRect: {
+          left: stripRect.left,
+          top: stripRect.top,
+          width: stripRect.width,
+          height: stripRect.height,
+        },
+        ignoreElements: (el) =>
+          el === this.canvas ||
+          (this._anchor && this._anchor.contains(el)),
+      });
+      if (!plan) return;
+      if (plan.assets && plan.assets.length) {
+        Promise.all(plan.assets).then(() => {
+          if (this._destroyed) return;
+          this._renderSignature = null;
+          wake(150);
+        });
+      }
+      const stripCanvas = (this._backdropStripCanvas ||=
+        document.createElement("canvas"));
+      NaughtyDOM.paint(plan, stripCanvas);
+      const stripContent = (this._backdropStripContent ||= {
+        canvas: stripCanvas,
+        version: 0,
+      });
+      stripContent.canvas = stripCanvas;
+      stripContent.version++;
+      if (this.backend.drawContent(stripContent, stripRect)) {
+        this._frameLensRects.push({
+          x: 0,
+          y: 0,
+          w: this.canvas.width,
+          h: this.canvas.height,
+        });
+      }
     }
 
     /* ----------------------------- */
@@ -6965,6 +7095,9 @@ fn fs() -> @location(0) vec4<f32> {
       }
       // situus.pl: szkło gaśnie razem z rodzicem (zakładki strony przenikają się przez opacity)
       const fade = parentFade(lens.el);
+      if (fade > 0.001 && this._allFrameLensRects) {
+        this._allFrameLensRects.push({ x, y, w, h });
+      }
       if (lens._shadowEl)
         lens._shadowEl.style.opacity = String((lens._revealProgress ?? 1) * fade);
       this.backend.drawLens(lens, {

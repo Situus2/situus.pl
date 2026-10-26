@@ -4,7 +4,7 @@
 
 - Strona główna: https://situus.pl/
 - Sekcja muzyczna: https://situus.pl/#muzyka
-- Kontakt: situs1235@gmail.com
+- Kontakt: situus2@gmail.com
 
 ## Muzyka (główny profil działalności)
 
@@ -56,4 +56,4 @@ Oprócz muzyki na stronie znajdują się odnośniki do dwóch autorskich narzęd
 
 ## Kontakt (`https://situus.pl/#kontakt`)
 
-- E-mail: situs1235@gmail.com (sprawy związane z muzyką, pytania o narzędzia lub prośby o dostęp do Situus Chat).
+- E-mail: situus2@gmail.com (sprawy związane z muzyką, pytania o narzędzia lub prośby o dostęp do Situus Chat).

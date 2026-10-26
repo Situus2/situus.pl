@@ -35,7 +35,7 @@
                 "@id": "https://situus.pl/#situus",
                 "name": "Situus",
                 "url": "https://situus.pl/",
-                "email": "situs1235@gmail.com",
+                "email": "situus2@gmail.com",
                 "description": "Twórca narzędzi webowych i muzyk wydający pod pseudonimem Situus."
             },
             {
@@ -405,20 +405,85 @@
         }
 
         .app-icon {
+            position: relative;
             width: 52px;
             height: 52px;
             flex-shrink: 0;
-            border-radius: 14px;
+            border-radius: 15px;
             display: grid;
             place-items: center;
             color: #fff;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 6px 16px -6px rgba(0, 0, 0, 0.45);
-            transition: transform 0.25s;
+            overflow: hidden;
+            isolation: isolate;
+            -webkit-backdrop-filter: blur(16px) saturate(185%);
+            backdrop-filter: blur(16px) saturate(185%);
+            box-shadow:
+                inset 0 1.5px 1px rgba(255, 255, 255, 0.62),
+                inset 0 -1.5px 2px rgba(140, 185, 255, 0.25),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+                inset 0 8px 18px rgba(255, 255, 255, 0.12),
+                0 10px 24px -6px rgba(6, 8, 24, 0.55);
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
         }
 
-        .app-icon svg { width: 26px; height: 26px; }
-        .app-icon--wrapped { background: linear-gradient(160deg, #8d98ff, #5a46e0 60%, #3a2bb0); }
-        .app-icon--chat { background: linear-gradient(160deg, #50557f, #23264a 60%, #14162e); }
+        .app-icon::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background:
+                radial-gradient(120% 90% at 22% 10%, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.08) 42%, transparent 70%),
+                linear-gradient(145deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.02) 55%, rgba(120, 175, 255, 0.14) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .app-icon::after {
+            content: "";
+            position: absolute;
+            top: -35%;
+            left: -20%;
+            width: 95%;
+            height: 75%;
+            border-radius: 50%;
+            background: radial-gradient(closest-side, rgba(255, 255, 255, 0.28), transparent 78%);
+            transform: rotate(-18deg);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .app-icon svg {
+            position: relative;
+            z-index: 2;
+            width: 30px;
+            height: 30px;
+            overflow: visible;
+            filter: drop-shadow(0 3px 6px rgba(8, 12, 34, 0.38)) drop-shadow(0 1px 1px rgba(255, 255, 255, 0.22));
+        }
+
+        .app:hover .app-icon {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow:
+                inset 0 1.5px 1.5px rgba(255, 255, 255, 0.78),
+                inset 0 -1.5px 2.5px rgba(150, 200, 255, 0.34),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+                inset 0 10px 22px rgba(255, 255, 255, 0.18),
+                0 14px 28px -6px rgba(6, 8, 24, 0.65);
+        }
+
+        .app-icon--wrapped {
+            background:
+                radial-gradient(95% 95% at 78% 88%, rgba(56, 189, 248, 0.36) 0%, transparent 68%),
+                radial-gradient(90% 90% at 20% 18%, rgba(167, 139, 250, 0.42) 0%, transparent 65%),
+                linear-gradient(155deg, rgba(124, 142, 255, 0.36) 0%, rgba(76, 86, 224, 0.24) 55%, rgba(36, 44, 128, 0.42) 100%);
+        }
+
+        .app-icon--chat {
+            background:
+                radial-gradient(95% 95% at 80% 85%, rgba(99, 179, 255, 0.32) 0%, transparent 68%),
+                radial-gradient(90% 90% at 24% 16%, rgba(196, 181, 253, 0.30) 0%, transparent 65%),
+                linear-gradient(155deg, rgba(110, 132, 210, 0.32) 0%, rgba(52, 64, 126, 0.24) 55%, rgba(22, 28, 68, 0.46) 100%);
+        }
 
         /* --- Muzyka --- */
 
@@ -1030,7 +1095,15 @@
 
         .tool-card .more span:last-child { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-2); }
         .tool-card .glass-c:hover .more span:last-child { color: var(--ink); }
-        .tool-card .glass-c:hover .app-icon { transform: scale(1.05); }
+        .tool-card .glass-c:hover .app-icon {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow:
+                inset 0 1.5px 1.5px rgba(255, 255, 255, 0.78),
+                inset 0 -1.5px 2.5px rgba(150, 200, 255, 0.34),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+                inset 0 10px 22px rgba(255, 255, 255, 0.18),
+                0 14px 28px -6px rgba(6, 8, 24, 0.65);
+        }
 
         .meta-status { display: inline-flex; align-items: center; gap: 6px; }
 
@@ -1041,8 +1114,8 @@
         /* Szczegóły narzędzia – jak strona w App Store */
 
         .app-head { display: flex; align-items: center; gap: 24px; margin-bottom: 24px; }
-        .app-head .app-icon { width: 112px; height: 112px; border-radius: 26px; }
-        .app-head .app-icon svg { width: 52px; height: 52px; }
+        .app-head .app-icon { width: 112px; height: 112px; border-radius: 28px; }
+        .app-head .app-icon svg { width: 62px; height: 62px; }
         .app-head .actions { margin-top: 16px; }
         .domain { font-size: 14px; color: var(--ink-3); }
 
@@ -1126,11 +1199,507 @@
         .dialog-actions form { display: contents; }
         .dialog .btn { width: 100%; height: 48px; font-size: 16px; }
 
+        /* --- Projekty i artykuły (natywny styl situus.pl) --- */
+
+        .w-project { grid-column: 1 / -1; text-align: left; }
+        .w-project .glass-c { padding: 18px 20px; display: block; }
+        .w-project-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.85fr);
+            gap: 20px;
+            align-items: center;
+            margin-top: 8px;
+        }
+        .w-project h3 {
+            font-size: 18px;
+            line-height: 1.3;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+        }
+        .w-project p {
+            margin-top: 6px;
+            font-size: 14px;
+            line-height: 1.48;
+            color: var(--ink-2);
+        }
+        .w-project-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 10px;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--ink-2);
+        }
+        .w-project .glass-c:hover .w-project-more { color: var(--ink); }
+        .w-project-thumbs {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .w-project-thumb {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(8, 10, 24, 0.55);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        .w-project-thumb img {
+            display: block;
+            width: 100%;
+            height: 112px;
+            object-fit: cover;
+            object-position: top center;
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .w-project .glass-c:hover .w-project-thumb img { transform: scale(1.03); }
+        .w-project-thumb span {
+            position: absolute;
+            left: 6px;
+            bottom: 6px;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 10.5px;
+            font-weight: 600;
+            background: rgba(10, 12, 28, 0.78);
+            color: var(--ink-2);
+            backdrop-filter: blur(8px);
+        }
+
+        /* Karta artykułu w zakładce #projekty */
+        .project-card { margin-bottom: 18px; }
+        .project-card .glass-c { padding: 24px; display: block; }
+        .project-card-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .project-meta { font-size: 13px; color: var(--ink-3); }
+        .project-card-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.85fr);
+            gap: 24px;
+            align-items: center;
+        }
+        .project-card h3 {
+            font-family: var(--display);
+            font-size: clamp(22px, 2.5vw, 28px);
+            line-height: 1.16;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+        .project-card-lead {
+            margin-top: 10px;
+            font-size: 15.5px;
+            line-height: 1.55;
+            color: var(--ink-2);
+        }
+        .project-highlights {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--hair);
+            display: grid;
+            gap: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--ink-2);
+        }
+        .project-highlights li {
+            position: relative;
+            padding-left: 14px;
+        }
+        .project-highlights li::before {
+            content: "–";
+            position: absolute;
+            left: 0;
+            color: var(--ink-3);
+        }
+        .project-highlights b { color: var(--ink); font-weight: 600; }
+
+        .project-preview-pair {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .project-preview-item {
+            border-radius: 14px;
+            overflow: hidden;
+            background: rgba(8, 10, 24, 0.5);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 14px 28px -16px rgba(0, 0, 0, 0.7);
+        }
+        .project-preview-item img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 560 / 812;
+            object-fit: cover;
+            object-position: top center;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .project-card .glass-c:hover .project-preview-item img { transform: scale(1.025); }
+        .project-preview-item small {
+            display: block;
+            padding: 7px 10px;
+            font-size: 11.5px;
+            font-weight: 500;
+            text-align: center;
+            color: var(--ink-2);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .project-card-foot {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid var(--hair);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13.5px;
+            color: var(--ink-3);
+        }
+        .project-card-stats { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+        .project-card-stats b { color: var(--ink-2); font-weight: 600; }
+        .project-card-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+            color: var(--ink-2);
+        }
+        .project-card .glass-c:hover .project-card-more { color: var(--ink); }
+
+        /* Widok artykułu (#projekty/stark-web-12b) */
+        .page--article { max-width: 860px; }
+        .article-head { margin-bottom: 22px; }
+        .article-meta-line {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ink-3);
+            margin-bottom: 8px;
+        }
+        .article-title {
+            font-family: var(--display);
+            font-size: clamp(28px, 3.8vw, 42px);
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: -0.035em;
+        }
+        .article-lead {
+            margin-top: 14px;
+            font-size: 17px;
+            line-height: 1.58;
+            color: var(--ink-2);
+        }
+
+        .facts--4 .glass-c { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+        .article-card { margin-top: 14px; }
+        .article-card .glass-c { padding: 24px 26px; }
+        .article-card h3 {
+            font-family: var(--display);
+            font-size: clamp(20px, 2.3vw, 24px);
+            line-height: 1.22;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            text-transform: none;
+            color: var(--ink);
+        }
+        .article-card .eyebrow + h3, .article-card .story-meta + h3 { margin-top: 4px; }
+        .article-card p {
+            margin-top: 12px;
+            font-size: 15.5px;
+            line-height: 1.65;
+            color: var(--ink-2);
+            max-width: 72ch;
+        }
+        .article-card p b, .article-card p strong { color: var(--ink); font-weight: 600; }
+        .article-card code {
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-family: ui-monospace, "Cascadia Code", "Fira Code", monospace;
+            font-size: 0.88em;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--ink);
+        }
+
+        .article-card .info-row {
+            margin-top: 14px;
+            padding: 10px 0;
+            border-top: 1px solid var(--hair);
+            border-bottom: 1px solid var(--hair);
+            align-items: center;
+        }
+
+        /* Porównanie Snake: Gemini 3.5 Flash vs STARK-WEB 12B */
+        .snake-compare {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            align-items: start;
+        }
+        .snake-pane-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .snake-pane-head b { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+        .snake-pane-head small { font-size: 12.5px; color: var(--ink-3); }
+        .snake-img-btn {
+            display: block;
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            background: #05070e;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 16px 32px -18px rgba(0, 0, 0, 0.75);
+            cursor: zoom-in;
+        }
+        .snake-img-btn img {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 561 / 812;
+            object-fit: cover;
+            object-position: top center;
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .snake-img-btn:hover img { transform: scale(1.015); }
+        .snake-zoom-hint {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            padding: 4px 9px;
+            border-radius: 8px;
+            font-size: 11.5px;
+            font-weight: 500;
+            background: rgba(10, 12, 26, 0.78);
+            color: var(--ink-2);
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+        }
+        .snake-caption {
+            margin-top: 10px !important;
+            font-size: 13.5px !important;
+            line-height: 1.5 !important;
+            color: var(--ink-2) !important;
+        }
+
+        /* Podsumowanie liczb w sekcji 2 i porównanie w sekcji 3 – bez pudełek w pudełkach */
+        .article-dl {
+            margin: 18px 0 6px;
+            padding: 14px 0;
+            border-top: 1px solid var(--hair);
+            border-bottom: 1px solid var(--hair);
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .article-dl > div + div {
+            border-left: 1px solid var(--hair);
+            padding-left: 16px;
+        }
+        .article-dl dt { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); }
+        .article-dl dd { margin-top: 4px; font-size: 18px; font-weight: 650; letter-spacing: -0.02em; color: var(--ink); }
+        .article-dl small { display: block; margin-top: 3px; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
+
+        .lib-cols {
+            margin: 16px 0 6px;
+            padding: 14px 0;
+            border-top: 1px solid var(--hair);
+            border-bottom: 1px solid var(--hair);
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+        .lib-col + .lib-col {
+            border-left: 1px solid var(--hair);
+            padding-left: 20px;
+        }
+        .lib-col h4 { font-size: 15px; font-weight: 600; color: var(--ink); }
+        .lib-col p { margin-top: 6px !important; font-size: 14px !important; line-height: 1.5 !important; }
+
+        /* Zwijany brudnopis CoT – czysta lista numerowana bez bocznych pasków */
+        .cot-widget {
+            margin-top: 16px;
+            border-top: 1px solid var(--hair);
+            border-bottom: 1px solid var(--hair);
+        }
+        .cot-trigger {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 13px 0;
+            text-align: left;
+            transition: opacity 0.2s;
+        }
+        .cot-trigger:hover { opacity: 0.88; }
+        .cot-trigger-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+        .cot-tag {
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-family: ui-monospace, "Cascadia Code", monospace;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--ink-2);
+        }
+        .cot-title { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+        .cot-sub { font-size: 13px; color: var(--ink-3); }
+        .cot-btn-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 600;
+            background: var(--chip);
+            color: var(--ink-2);
+            flex-shrink: 0;
+        }
+        .cot-btn-pill svg {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.25s ease;
+            transform: rotate(90deg);
+        }
+        .cot-widget.is-open .cot-btn-pill svg { transform: rotate(-90deg); }
+        .cot-body {
+            padding: 4px 0 16px;
+            border-top: 1px solid var(--hair);
+        }
+        .cot-widget:not(.is-open) .cot-body { display: none; }
+        .cot-list {
+            counter-reset: cot;
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .cot-list li {
+            counter-increment: cot;
+            display: grid;
+            grid-template-columns: 24px minmax(0, 1fr);
+            gap: 8px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: var(--ink-2);
+        }
+        .cot-list li::before {
+            content: counter(cot) ".";
+            font-family: ui-monospace, "Cascadia Code", monospace;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--ink-3);
+        }
+        .cot-list li b { color: var(--ink); font-weight: 600; }
+        .cot-token-line {
+            display: inline-block;
+            margin-top: 12px;
+            font-family: ui-monospace, "Cascadia Code", monospace;
+            font-size: 12px;
+            color: var(--ink-3);
+        }
+        .cot-code-start {
+            margin-top: 6px;
+            font-family: ui-monospace, "Cascadia Code", monospace;
+            font-size: 12.5px;
+            color: var(--ink-2);
+        }
+
+        /* Wyniki benchmarku – stonowane, jednolite paski */
+        .bench-list {
+            margin-top: 16px;
+            padding: 12px 0;
+            border-top: 1px solid var(--hair);
+            border-bottom: 1px solid var(--hair);
+            display: grid;
+            gap: 10px;
+        }
+        .bench-row { display: grid; gap: 5px; }
+        .bench-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13.5px;
+            color: var(--ink-2);
+        }
+        .bench-meta b { color: var(--ink); font-variant-numeric: tabular-nums; }
+        .bench-track {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        .bench-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: rgba(255, 255, 255, 0.38);
+        }
+        .bench-fill--hi { background: #fff; }
+
+        /* Stopka artykułu z linkiem do pracy naukowej */
+        .article-foot {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--hair);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+        .article-foot-text b { display: block; font-size: 15px; color: var(--ink); }
+        .article-foot-text small { display: block; margin-top: 3px; font-size: 13.5px; color: var(--ink-2); }
+
+        /* Lightbox do powiększania screenów Snake'a */
+        .dialog--zoom {
+            width: min(100% - 24px, 680px);
+            border-radius: 22px;
+            background: rgba(12, 14, 30, 0.92);
+        }
+        .dialog--zoom .dialog-body { padding: 14px; }
+        .dialog--zoom img {
+            display: block;
+            width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 14px;
+        }
+        .dialog--zoom-bar {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 0 4px;
+            font-size: 13px;
+            color: var(--ink-2);
+        }
+        .dialog--zoom-bar .btn { width: auto; height: 36px; padding: 0 16px; font-size: 13.5px; }
+
         /* --- Mniejsze ekrany --- */
 
         @media (max-width: 900px) {
             .apps-grid { grid-template-columns: minmax(0, 1fr); }
             .tool-card .glass-c { min-height: 0; }
+            .w-project-body, .project-card-grid, .snake-compare, .article-dl, .lib-cols { grid-template-columns: minmax(0, 1fr); }
+            .article-dl > div + div, .lib-col + .lib-col { border-left: 0; padding-left: 0; border-top: 1px solid var(--hair); padding-top: 12px; }
+            .facts--4 .glass-c { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 12px; }
+            .facts--4 .fact:nth-child(3) { border-left: 0; }
         }
 
         @media (max-width: 700px) {
@@ -1152,8 +1721,8 @@
             .art { width: min(260px, 70vw); }
             .history { margin-top: 36px; }
             .app-head { flex-direction: column; align-items: flex-start; gap: 16px; }
-            .app-head .app-icon { width: 88px; height: 88px; border-radius: 21px; }
-            .app-head .app-icon svg { width: 42px; height: 42px; }
+            .app-head .app-icon { width: 88px; height: 88px; border-radius: 22px; }
+            .app-head .app-icon svg { width: 48px; height: 48px; }
             .facts .glass-c { padding: 14px 0; }
             .fact { padding: 2px 8px; }
             .fact b { font-size: 14px; }
@@ -1189,6 +1758,7 @@
                 <span class="tab-fill" aria-hidden="true"></span>
                 <a class="tab" href="#start" data-tab="start">Situus</a>
                 <a class="tab" href="#muzyka" data-tab="muzyka">Muzyka</a>
+                <a class="tab" href="#projekty" data-tab="projekty">Projekty</a>
                 <a class="tab" href="#narzedzia" data-tab="narzedzia">Narzędzia</a>
                 <a class="tab" href="#kontakt" data-tab="kontakt">Kontakt</a>
             </div>
@@ -1197,11 +1767,80 @@
 
     <!-- Ikony używane w kilku miejscach -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+            <linearGradient id="lg-front" x1="15%" y1="6%" x2="85%" y2="96%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                <stop offset="48%" stop-color="#e8f1ff" stop-opacity="0.72"/>
+                <stop offset="100%" stop-color="#b4d2ff" stop-opacity="0.46"/>
+            </linearGradient>
+            <linearGradient id="lg-back-wrap" x1="10%" y1="0%" x2="90%" y2="100%">
+                <stop offset="0%" stop-color="#c4b5fd" stop-opacity="0.65"/>
+                <stop offset="55%" stop-color="#818cf8" stop-opacity="0.38"/>
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.52"/>
+            </linearGradient>
+            <linearGradient id="lg-back-chat" x1="12%" y1="0%" x2="88%" y2="100%">
+                <stop offset="0%" stop-color="#a5b4fc" stop-opacity="0.62"/>
+                <stop offset="52%" stop-color="#60a5fa" stop-opacity="0.34"/>
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.48"/>
+            </linearGradient>
+            <linearGradient id="lg-rim" x1="18%" y1="0%" x2="82%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/>
+                <stop offset="45%" stop-color="#ffffff" stop-opacity="0.28"/>
+                <stop offset="100%" stop-color="#93c5fd" stop-opacity="0.62"/>
+            </linearGradient>
+            <linearGradient id="lg-bar" x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.92"/>
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.78"/>
+            </linearGradient>
+            <linearGradient id="lg-ink" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3b4fd8" stop-opacity="0.78"/>
+                <stop offset="100%" stop-color="#1d3578" stop-opacity="0.62"/>
+            </linearGradient>
+        </defs>
         <symbol id="i-chev" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
         <symbol id="i-back" viewBox="0 0 16 16"><path d="M10 3.5L5.5 8 10 12.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
         <symbol id="i-out" viewBox="0 0 16 16"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
-        <symbol id="i-wrapped" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4A1.5 1.5 0 0 1 4 14.5z"/><path d="M9 12.5v-3M12 12.5v-6M15 12.5v-4"/></g></symbol>
-        <symbol id="i-chat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l1.9 5 5 1.9-5 1.9-1.9 5-1.9-5-5-1.9 5-1.9z"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></g></symbol>
+        <symbol id="i-wrapped" viewBox="0 0 32 32">
+            <!-- Tylna półprzezroczysta tafla szkła pod lekkim kątem -->
+            <rect x="7" y="4.2" width="19.5" height="15" rx="4.8" transform="rotate(7 16.8 11.7)" fill="url(#lg-back-wrap)" stroke="url(#lg-rim)" stroke-width="0.9"/>
+            <!-- Cień rzucany przez przednią bańkę na tylną taflę -->
+            <path d="M5.2 8.6A4.8 4.8 0 0 1 10 3.8h11.2A4.8 4.8 0 0 1 26 8.6v8.8a4.8 4.8 0 0 1-4.8 4.8h-7.4l-4.4 3.7c-.64.54-1.62.08-1.62-.75v-2.95A4.78 4.78 0 0 1 5.2 17.4Z" fill="rgba(12, 16, 48, 0.2)" transform="translate(0.9, 1.3)"/>
+            <!-- Główna oszroniona bańka wiadomości Liquid Glass -->
+            <path d="M4.8 8.2A4.8 4.8 0 0 1 9.6 3.4h11.4a4.8 4.8 0 0 1 4.8 4.8v9a4.8 4.8 0 0 1-4.8 4.8h-7.5L9 25.7c-.64.54-1.62.08-1.62-.75V22A4.78 4.78 0 0 1 4.8 17.2Z" fill="url(#lg-front)" stroke="url(#lg-rim)" stroke-width="1.15" stroke-linejoin="round"/>
+            <!-- Górny refleks soczewki -->
+            <path d="M8.6 5.6h13.4" stroke="#ffffff" stroke-opacity="0.82" stroke-width="1.1" stroke-linecap="round"/>
+            <!-- Trójwymiarowe kapsułki wykresu statystyk wewnątrz szkła -->
+            <rect x="9.3" y="12.6" width="3" height="6.2" rx="1.5" fill="url(#lg-bar)"/>
+            <rect x="13.8" y="7.8" width="3" height="11" rx="1.5" fill="url(#lg-bar)"/>
+            <rect x="18.3" y="10.2" width="3" height="8.6" rx="1.5" fill="url(#lg-bar)"/>
+            <!-- Błyski na szczytach słupków -->
+            <circle cx="10.8" cy="14" r="0.65" fill="#ffffff" fill-opacity="0.75"/>
+            <circle cx="15.3" cy="9.2" r="0.65" fill="#ffffff" fill-opacity="0.85"/>
+            <circle cx="19.8" cy="11.6" r="0.65" fill="#ffffff" fill-opacity="0.75"/>
+        </symbol>
+        <symbol id="i-chat" viewBox="0 0 32 32">
+            <!-- Tylny szklany dymek rozmowy (zwrócony w prawo) -->
+            <path d="M12.2 4.8h10.8a4.5 4.5 0 0 1 4.5 4.5v7.2a4.5 4.5 0 0 1-4.5 4.5h-1.6v3c0 .75-.9 1.15-1.46.65L16.6 21h-4.4a4.5 4.5 0 0 1-4.5-4.5V9.3a4.5 4.5 0 0 1 4.5-4.5Z" fill="url(#lg-back-chat)" stroke="url(#lg-rim)" stroke-width="0.95" stroke-linejoin="round"/>
+            <!-- Cień między taflami szkła dający głębię -->
+            <path d="M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z" fill="rgba(10, 14, 42, 0.24)" transform="translate(1, -0.7)"/>
+            <!-- Przedni oszroniony dymek rozmowy Liquid Glass (zwrócony w lewo) -->
+            <path d="M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z" fill="url(#lg-front)" stroke="url(#lg-rim)" stroke-width="1.15" stroke-linejoin="round"/>
+            <!-- Górny refleks soczewki na przedniej bańce -->
+            <path d="M8.2 11.4h12.4" stroke="#ffffff" stroke-opacity="0.82" stroke-width="1.1" stroke-linecap="round"/>
+            <!-- Wytłoczone w szkle kapsułki tekstu rozmowy -->
+            <rect x="8.6" y="14.2" width="11.4" height="2.4" rx="1.2" fill="url(#lg-ink)"/>
+            <rect x="8.6" y="18.2" width="7.4" height="2.4" rx="1.2" fill="url(#lg-ink)" fill-opacity="0.82"/>
+        </symbol>
+        <symbol id="i-chat-lock" viewBox="0 0 32 32">
+            <!-- Szklany pałąk kłódki -->
+            <path d="M11.2 14.5v-3.4a4.8 4.8 0 0 1 9.6 0v3.4" fill="none" stroke="url(#lg-front)" stroke-width="2.7" stroke-linecap="round"/>
+            <path d="M11.2 14.5v-3.4a4.8 4.8 0 0 1 9.6 0v3.4" fill="none" stroke="#ffffff" stroke-opacity="0.7" stroke-width="1" stroke-linecap="round"/>
+            <!-- Oszroniony korpus kłódki Liquid Glass -->
+            <rect x="7.2" y="13.5" width="17.6" height="13.5" rx="4.6" fill="url(#lg-front)" stroke="url(#lg-rim)" stroke-width="1.15"/>
+            <path d="M10.4 15.6h11.2" stroke="#ffffff" stroke-opacity="0.82" stroke-width="1.05" stroke-linecap="round"/>
+            <circle cx="16" cy="19.3" r="1.6" fill="url(#lg-ink)"/>
+            <rect x="15.1" y="19.8" width="1.8" height="3.6" rx="0.9" fill="url(#lg-ink)"/>
+        </symbol>
         <symbol id="i-lock" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="7" width="9" height="6.5" rx="1.6"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7"/></g></symbol>
         <symbol id="i-mail" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="2.5" y="4.5" width="15" height="11" rx="2.5"/><path d="M3.5 6l6.5 5 6.5-5"/></g></symbol>
         <!-- Przekreślona iskra – iskrą zwykle oznacza się AI -->
@@ -1210,6 +1849,7 @@
         <symbol id="i-key" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="10" r="3.5"/><path d="M10.5 10h7M15 10v2.5M17.5 10v2"/></g></symbol>
         <symbol id="i-play" viewBox="0 0 16 16"><path d="M4.8 3.2c0-.5.55-.8 1-.52l7.4 4.8c.4.26.4.88 0 1.14l-7.4 4.8c-.45.28-1-.02-1-.52z" fill="currentColor"/></symbol>
         <symbol id="i-pause" viewBox="0 0 16 16"><rect x="4" y="3" width="2.8" height="10" rx="1" fill="currentColor"/><rect x="9.2" y="3" width="2.8" height="10" rx="1" fill="currentColor"/></symbol>
+        <symbol id="i-doc" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h5.5L13 5.5V13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 2v4h4M5.5 8.5h5M5.5 11h3.5"/></g></symbol>
     </svg>
 
     <main class="views">
@@ -1217,7 +1857,7 @@
         <!-- ============ Situus ============ -->
         <section class="view view-start is-on" id="start" data-view="start" data-title="Situus" aria-label="Situus">
             <div class="home">
-                <p class="home-kicker">Muzyka i&nbsp;narzędzia do przeglądarki</p>
+                <p class="home-kicker">Muzyka, projekty i&nbsp;narzędzia do przeglądarki</p>
                 <div class="mark"><h1 tabindex="-1">Situus</h1></div>
 
                 <div class="home-widgets">
@@ -1251,6 +1891,29 @@
                                 </a>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="glass w-project">
+                        <a class="glass-c" href="#projekty/stark-web-12b">
+                            <h2 class="label">Projekty</h2>
+                            <div class="w-project-body">
+                                <div>
+                                    <h3>Jak wytrenowałem własne AI do pisania stron i&nbsp;gier na&nbsp;domowym komputerze (i&nbsp;dlaczego po drodze prawie straciło pamięć)</h3>
+                                    <p>Kulisy powstania modelu STARK-WEB 12B. O&nbsp;tym, jak na&nbsp;zwykłej karcie RTX 5060&nbsp;Ti przepuściłem przez model ponad 39&nbsp;milionów znaków kodu, zmusiłem go do prowadzenia „brudnopisu” w&nbsp;9&nbsp;krokach i&nbsp;sprawiłem, że w&nbsp;pisaniu cyberpunkowego Snake’a prześcignął swój własny wzorzec – Gemini 3.5&nbsp;Flash.</p>
+                                    <span class="w-project-more">Czytaj artykuł <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                                </div>
+                                <div class="w-project-thumbs" aria-hidden="true">
+                                    <div class="w-project-thumb">
+                                        <img src="img/gemini3-5flash.png" alt="" width="565" height="814" loading="lazy" decoding="async">
+                                        <span>Gemini 3.5 Flash</span>
+                                    </div>
+                                    <div class="w-project-thumb">
+                                        <img src="img/stark-web-12b-v0.9.png" alt="" width="561" height="812" loading="lazy" decoding="async">
+                                        <span>STARK-WEB 12B</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -1666,6 +2329,264 @@
             </div>
         </section>
 
+        <!-- ============ Projekty ============ -->
+        <section class="view" id="projekty" data-view="projekty" data-title="Projekty – Situus" aria-labelledby="t-projekty">
+            <div class="page">
+                <h2 class="page-title" id="t-projekty" tabindex="-1">Projekty</h2>
+                <p class="page-lead">Artykuły, eksperymenty i&nbsp;kulisy powstawania moich projektów od kuchni.</p>
+
+                <div class="projects-list">
+                    <div class="glass project-card">
+                        <a class="glass-c" href="#projekty/stark-web-12b">
+                            <div class="project-card-grid">
+                                <div>
+                                    <p class="story-meta"><time datetime="2026-06">Czerwiec 2026</time><span>Artykuł · AI / LLM</span></p>
+                                    <h3>Jak wytrenowałem własne AI do pisania stron i&nbsp;gier na&nbsp;domowym komputerze (i&nbsp;dlaczego po drodze prawie straciło pamięć)</h3>
+                                    <p class="project-lead">Kulisy powstania modelu STARK-WEB 12B. O&nbsp;tym, jak na&nbsp;zwykłej karcie RTX 5060&nbsp;Ti przepuściłem przez model ponad 39&nbsp;milionów znaków kodu, zmusiłem go do prowadzenia „brudnopisu” w&nbsp;9&nbsp;krokach i&nbsp;sprawiłem, że w&nbsp;pisaniu cyberpunkowego Snake’a prześcignął swój własny wzorzec – Gemini 3.5&nbsp;Flash.</p>
+
+                                    <ul class="story-facts">
+                                        <li>Gemma 4 12B (LoRA + QAT)</li>
+                                        <li>806 projektów · 12,29M tokenów</li>
+                                        <li>RTX 5060 Ti 16 GB</li>
+                                        <li>70,5 pkt w LLM-as-a-Judge</li>
+                                    </ul>
+
+                                    <span class="project-cta">Czytaj pełny artykuł <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                                </div>
+
+                                <div class="w-project-thumbs" aria-hidden="true">
+                                    <div class="w-project-thumb">
+                                        <img src="img/gemini3-5flash.png" alt="" width="565" height="814" loading="lazy" decoding="async">
+                                        <span>Nauczyciel: Gemini 3.5 Flash</span>
+                                    </div>
+                                    <div class="w-project-thumb">
+                                        <img src="img/stark-web-12b-v0.9.png" alt="" width="561" height="812" loading="lazy" decoding="async">
+                                        <span>Uczeń: STARK-WEB 12B</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ Artykuł: STARK-WEB 12B ============ -->
+        <section class="view" data-view="projekty/stark-web-12b" data-title="STARK-WEB 12B – Projekty – Situus" aria-labelledby="t-stark-web">
+            <div class="page page--article">
+                <div class="glass pill back"><a class="glass-c" href="#projekty"><svg aria-hidden="true"><use href="#i-back"/></svg>Projekty</a></div>
+
+                <header class="article-hero">
+                    <p class="eyebrow">Artykuł · Kulisy projektu · Czerwiec 2026</p>
+                    <h2 class="article-title" id="t-stark-web" tabindex="-1">Jak wytrenowałem własne AI do pisania stron i&nbsp;gier na&nbsp;domowym komputerze (i&nbsp;dlaczego po drodze prawie straciło pamięć)</h2>
+                    <p class="article-sub">Zamiast sztywnej dokumentacji – luźna opowieść o&nbsp;tym, jak w&nbsp;domowych warunkach powstawał <b>STARK-WEB 12B</b>: mój własny model sztucznej inteligencji, który z&nbsp;jednego krótkiego zdania potrafi wygenerować gotową, dopracowaną stronę albo grę przeglądarkową w&nbsp;jednym pliku HTML.</p>
+                    <div class="actions">
+                        <a class="btn btn--primary" href="praca_naukowa_2.html" target="_blank" rel="noopener">
+                            <svg aria-hidden="true"><use href="#i-doc"/></svg>
+                            Pełna praca badawcza (PDF / HTML)
+                        </a>
+                        <a class="btn" href="#stark-wpadki">Trzy historie o&nbsp;wpadkach <svg aria-hidden="true"><use href="#i-chev"/></svg></a>
+                    </div>
+                </header>
+
+                <div class="glass facts facts--4">
+                    <div class="glass-c">
+                        <div class="fact"><span class="label">Baza treningowa</span><b>39,3 mln znaków</b></div>
+                        <div class="fact"><span class="label">Ręcznie sprawdzone</span><b>806 projektów</b></div>
+                        <div class="fact"><span class="label">Sprzęt domowy</span><b>RTX 5060 Ti 16 GB</b></div>
+                        <div class="fact"><span class="label">Benchmark sędziego</span><b>70,5 pkt (+6,0%)</b></div>
+                    </div>
+                </div>
+
+                <!-- 1. Wstęp: Zrób mi grę w jednym pliku -->
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <p class="label">Wstęp</p>
+                        <h3>„Zrób mi grę w&nbsp;jednym pliku”</h3>
+                        <p>Najprościej zacząć od konkretu. Poniżej widać dwa zrzuty ekranu wygenerowane po wpisaniu dokładnie tego samego, jednozdaniowego polecenia: <code>Make an HTML snake game in 1 file</code>.</p>
+                        <p>Po lewej stronie znajduje się surowy, prosty Snake wygenerowany przez komercyjny model Google (<b>Gemini 3.5 Flash</b>), który służył mi za wzorzec („Nauczyciela”). Po prawej – <b>„NEON SNAKE”</b> z&nbsp;neonową poświatą, licznikami z&nbsp;wiodącymi zerami i&nbsp;automatycznymi przyciskami dotykowymi na&nbsp;telefon, którego wypluł mój lokalny model <b>STARK-WEB 12B</b> (już we wczesnej wersji v0.9). Kliknij dowolny zrzut, żeby przyjrzeć się detalom w&nbsp;pełnej rozdzielczości:</p>
+
+                        <div class="snake-compare">
+                            <figure class="snake-card">
+                                <button type="button" class="snake-img-wrap" data-zoom-img="img/gemini3-5flash.png" data-zoom-caption="Oryginał (Nauczyciel) – Gemini 3.5 Flash: poprawny logicznie, ale surowy wizualnie Snake.">
+                                    <img src="img/gemini3-5flash.png" alt="Zrzut ekranu gry Snake wygenerowanej przez model Gemini 3.5 Flash" width="565" height="814" loading="lazy" decoding="async">
+                                </button>
+                                <figcaption class="snake-meta">
+                                    <b>Oryginał (Nauczyciel) — Gemini 3.5 Flash</b>
+                                    <p>Poprawna logika gry, ale bardzo podstawowy wygląd bez oprawy wizualnej i&nbsp;przycisków mobilnych.</p>
+                                </figcaption>
+                            </figure>
+
+                            <figure class="snake-card">
+                                <button type="button" class="snake-img-wrap" data-zoom-img="img/stark-web-12b-v0.9.png" data-zoom-caption="Odtworzenie (Uczeń) – STARK-WEB 12B v0.9: cyberpunkowy NEON SNAKE z poświatą, licznikami i sterowaniem dotykowym.">
+                                    <img src="img/stark-web-12b-v0.9.png" alt="Zrzut ekranu gry NEON SNAKE wygenerowanej przez lokalny model STARK-WEB 12B" width="561" height="812" loading="lazy" decoding="async">
+                                </button>
+                                <figcaption class="snake-meta">
+                                    <b>Odtworzenie (Uczeń) — STARK-WEB 12B (v0.9)</b>
+                                    <p>Cyberpunkowy interfejs, neonowa poświata, liczniki z&nbsp;zerami wiodącymi i&nbsp;automatyczne wykrywanie ekranu dotykowego.</p>
+                                </figcaption>
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Od za małego mózgu do 39 milionów znaków -->
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <p class="label">Skala projektu</p>
+                        <h3>Od za małego mózgu do 39&nbsp;milionów znaków</h3>
+                        <p>Cała historia zaczęła się od mniejszego modelu – <b>Gemma 4 4B</b> (4&nbsp;miliardy parametrów). Szybko okazało się jednak, że przy trudniejszej logice w&nbsp;JavaScripcie kompletnie się gubi. Zachowywał się trochę jak zdolny student pierwszego roku, który bez problemu ogarnia prosty kalkulator, ale wykłada się, gdy każesz mu napisać grę 3D albo system okienek w&nbsp;przeglądarce – po prostu brakowało mu „pojemności mózgu”, by spiąć naraz tyle zależności.</p>
+                        <p>Zbiegło się to idealnie z&nbsp;premierą trzy razy większego wariantu <b>Gemma 4 12B</b>. Przesiadka rozwiązała problem pojemności, ale wymusiła zbudowanie od zera gigantycznej, dopieszczonej bazy treningowej. Zamiast generować kod „na raz”, każdy z&nbsp;<b>806 rozbudowanych projektów</b> przeszedł wieloetapowy proces ulepszania (<em>critique-and-refine</em>), a&nbsp;potem każdy pojedynczy plik osobiście odpaliłem w&nbsp;przeglądarce i&nbsp;sprawdziłem ręcznie pod kątem wyglądu, animacji oraz działania.</p>
+
+                        <dl class="article-dl">
+                            <div>
+                                <dt>12 287 335 tokenów (~39,3 mln znaków)</dt>
+                                <dd>Łączna objętość zbioru STARK-WEB v1.3 – odpowiednik około 6,7&nbsp;miliona słów czystego kodu i&nbsp;planowania.</dd>
+                            </div>
+                            <div>
+                                <dt>Średnio 48 800 znaków na projekt</dt>
+                                <dd>Przeciętny przykład ma 15&nbsp;245 tokenów (objętość solidnego rozdziału książki), a&nbsp;rekordowy pojedynczy program liczy aż <b>135&nbsp;500 znaków</b> (42&nbsp;341 tokenów – długość krótkiej powieści napisanej w&nbsp;jednym przebiegu).</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- 3. Jak uczy się AI na domowym PC (Porównanie z biblioteką) -->
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <p class="label">Metoda LoRA</p>
+                        <h3>Jak uczy się AI na&nbsp;domowym PC (porównanie z&nbsp;biblioteką)</h3>
+                        <p>Jak udało się wytrenować tak duży, 12-miliardowy model na&nbsp;pojedynczej, domowej karcie graficznej <b>RTX 5060&nbsp;Ti (16&nbsp;GB VRAM)</b>? Wyobraź sobie, że główna wiedza modelu Gemma 4 12B to <b>olbrzymia biblioteka narodowa zawierająca 12&nbsp;miliardów grubych ksiąg</b>.</p>
+
+                        <div class="lib-cols">
+                            <div class="lib-col">
+                                <b>Tradycyjny trening (pełny fine-tuning)</b>
+                                <p>Wymagałby przepisania i&nbsp;wydrukowania wszystkich 12&nbsp;miliardów ksiąg od nowa. Do tego potrzebne są serwerownie warte miliony złotych i&nbsp;ogromne ilości prądu.</p>
+                            </div>
+                            <div class="lib-col">
+                                <b>Metoda LoRA (podręczny notatnik)</b>
+                                <p>Zostawiamy całą bibliotekę nietkniętą (zamrożoną), a&nbsp;bibliotekarzowi dajemy <b>mały, lekki notatnik</b> (kilkadziesiąt MB) z&nbsp;nowymi zasadami pisania nowoczesnych stron.</p>
+                            </div>
+                        </div>
+
+                        <p>W tym podręcznym notatniku (adapterze <b>LoRA</b>) zapisujemy wyłącznie różnice i&nbsp;nowe nawyki: „używaj nowoczesnego CSS Grid i&nbsp;glassmorphismu”, „zawsze planuj kod w&nbsp;9&nbsp;krokach”, „dbaj o&nbsp;responsywność”. Gdy zadajesz modelowi pytanie, korzysta on ze swojej ogólnej wiedzy z&nbsp;wielkich ksiąg, ale nakłada na&nbsp;nią instrukcje z&nbsp;notatnika. Dzięki temu w&nbsp;pojedynczej warstwie zamiast 16&nbsp;milionów wag modyfikujemy jedynie około 524&nbsp;tysięcy parametrów.</p>
+                    </div>
+                </div>
+
+                <!-- 4. Interaktywne okienko: Zajrzyj do głowy modelu -->
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <p class="label">Ukryty brudnopis AI</p>
+                        <h3>Zajrzyj do głowy modelu (Chain of Thought w&nbsp;9&nbsp;krokach)</h3>
+                        <p>Gdyby ktoś kazał Ci w&nbsp;ułamku sekundy pomnożyć w&nbsp;pamięci <code>473 × 289</code> i&nbsp;natychmiast krzyknąć wynik, łatwo o&nbsp;pomyłkę. Z&nbsp;kartką papieru (brudnopisem) policzysz to pod kreską bezbłędnie. Dokładnie tym dla modelu jest ukryty kanał myślenia <code>&lt;|channel&gt;thought</code>.</p>
+                        <p>Na początku swobodnie rozmyślający model wpadał jednak w&nbsp;<b>nieskończone pętle myślowe</b> – planował w&nbsp;kółko i&nbsp;nigdy nie zaczynał pisać kodu. Naprawiłem to, narzucając mu sztywny, 9-punktowy protokół zakończony twardym znacznikiem stopu <code>[END_OF_THINKING]</code>. Ponieważ zwykłe programy wyświetlały ten brudnopis na&nbsp;ekranie razem z&nbsp;kodem, napisałem własny interfejs ze strumieniowym parserem, który w&nbsp;locie chowa myśli do zwijanego okienka. Kliknij poniżej, żeby rozwinąć dokładnie taki brudnopis, jaki działa w&nbsp;mojej aplikacji:</p>
+
+                        <div class="cot-widget is-open" id="cot-demo">
+                            <button type="button" class="cot-toggle" aria-expanded="true" aria-controls="cot-demo-body" id="cot-demo-btn">
+                                <span class="cot-toggle-left">
+                                    <span class="cot-tag">&lt;|channel&gt;thought</span>
+                                    <span>
+                                        <span class="cot-title">Brudnopis modelu (9 kroków przed napisaniem 1. linijki HTML)</span>
+                                        <span class="cot-sub"> · dla polecenia „Make an HTML snake game in 1 file”</span>
+                                    </span>
+                                </span>
+                                <span class="cot-btn-pill">
+                                    <span data-cot-label>Zwiń myśli</span>
+                                    <svg aria-hidden="true"><use href="#i-chev"/></svg>
+                                </span>
+                            </button>
+                            <div class="cot-body" id="cot-demo-body">
+                                <ol class="cot-list">
+                                    <li><span><b>Understand the Goal:</b> Stworzenie kompletnej, jednoplikowej gry Snake w&nbsp;HTML5 Canvas o&nbsp;estetyce cyberpunkowej („NEON SNAKE”) z&nbsp;pełną obsługą klawiatury i&nbsp;ekranów dotykowych.</span></li>
+                                    <li><span><b>Inputs:</b> Strzałki / WASD na&nbsp;klawiaturze, przyciski ekranowe D-Pad na&nbsp;urządzeniach mobilnych, przycisk Start / Pause oraz Reset.</span></li>
+                                    <li><span><b>Output:</b> Plansza Canvas z&nbsp;siatką, świecący wąż, pulsujące jedzenie, liczniki SCORE i&nbsp;HIGH SCORE formatowane do 3&nbsp;cyfr (<code>000</code>) oraz kontrolki mobilne.</span></li>
+                                    <li><span><b>Identify Key Constraints &amp; Technologies:</b> Architektura Single-File (HTML + CSS + JS w&nbsp;jednym pliku), brak zewnętrznych bibliotek, płynna pętla gry i&nbsp;zapis rekordu w&nbsp;<code>localStorage</code>.</span></li>
+                                    <li><span><b>Design the HTML Structure:</b> Kontener główny z&nbsp;nagłówkiem neonowym, paskiem statystyk, elementem <code>&lt;canvas&gt;</code>, paskiem akcji i&nbsp;sekcją przycisków kierunkowych.</span></li>
+                                    <li><span><b>Design the CSS:</b> Ciemne tło <code>#07090e</code>, neonowy cyjan i&nbsp;zieleń z&nbsp;poświatą <code>box-shadow</code>, responsywny układ Flexbox oraz ukrywanie D-Pada na&nbsp;desktopie przez media queries.</span></li>
+                                    <li><span><b>Design the JavaScript:</b> Tablica segmentów węża, kolejka wejścia zapobiegająca zawróceniu o&nbsp;180° w&nbsp;jednej klatce, detekcja kolizji ze ścianą i&nbsp;ogonem, efekt <code>shadowBlur</code> na&nbsp;Canvasie.</span></li>
+                                    <li><span><b>Refinement &amp; Implementation:</b> Dodanie blokady przewijania strony strzałkami (<code>e.preventDefault()</code>) oraz płynnego skalowania planszy na&nbsp;mniejszych ekranach.</span></li>
+                                    <li><span><b>Final Review:</b> Wszystkie style i&nbsp;skrypty są domknięte, zmienne zainicjalizowane, brak wiszących referencji DOM – gotowe do wygenerowania kodu.</span></li>
+                                </ol>
+                                <span class="cot-token-line">--- [END_OF_THINKING] &lt;channel|&gt;</span>
+                                <div class="cot-code-start">&lt;!DOCTYPE html&gt; &lt;!-- Dopiero tutaj model zaczyna pisać właściwy kod dla użytkownika --&gt;</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Sekcja „Co poszło nie tak” (3 krótkie historie o wpadkach) -->
+                <div class="glass text-card" id="stark-wpadki">
+                    <div class="glass-c">
+                        <p class="label">Co poszło nie tak</p>
+                        <h3>Trzy historie o&nbsp;wpadkach i&nbsp;paradoksach podczas treningu</h3>
+                        <p>Najciekawsze rzeczy podczas trenowania własnego AI dzieją się wtedy, gdy coś pozornie oczywistego obraca się przeciwko tobie.</p>
+
+                        <div class="stories-stack">
+                            <article class="story-block">
+                                <p class="story-meta"><span>Historia 1 z 3</span><span>Przeuczenie i&nbsp;paradoks Dropoutu</span></p>
+                                <h4>Piękne strony, które nie działają (czyli kujon przed egzaminem)</h4>
+                                <p>W pierwszej publicznej wersji testowej (<b>v1.0</b>) chciałem, żeby model idealnie odwzorowywał czysty kod z&nbsp;bazy, więc ustawiłem agresywną skalę nauki i&nbsp;całkowicie wyłączyłem kontrolowany szum (<code>Dropout = 0</code>). Efekt? Model zachował się jak kujon przed egzaminem: wykuł na&nbsp;blachę przepiękne style CSS, ale przy jakimkolwiek nowym zadaniu robił literówki w&nbsp;JavaScripcie, podpinał martwe przyciski i&nbsp;serwował pusty ekran.</p>
+                                <p>W ślepym teście ocenianym przez zewnętrzny model-sędziego (<em>LLM-as-a-Judge</em>) wersja v1.0 zdobyła <b>65,0 pkt</b> – czyli wypadła <b>gorzej niż czysty model bazowy przed jakąkolwiek nauką (66,5 pkt)</b>! Dopiero gdy w&nbsp;wersji v1.2 dodałem 5% utrudnienia (<code>lora_dropout = 0.05</code>) i&nbsp;regularyzację L2, a&nbsp;w&nbsp;wersji <b>v1.3</b> dorzuciłem 77 naprawdę trudnych zadań algorytmicznych (CRUD, gry planszowe, asynchroniczne tabele), model przestał kuć na&nbsp;pamięć, zrozumiał ogólne reguły programowania i&nbsp;wystrzelił na&nbsp;<b>70,5 punktu</b> przy rekordowo niskim błędzie walidacyjnym (<code>eval_loss = 0,9149</code>).</p>
+
+                                <div class="bench-list" aria-label="Wyniki benchmarku LLM-as-a-Judge">
+                                    <div class="bench-row">
+                                        <div class="bench-meta"><span>STARK-WEB v1.0 (przeuczony kujon – piękne UI, błędy w JS)</span><b>65,0 pkt</b></div>
+                                        <div class="bench-track"><div class="bench-fill" style="width: 65%"></div></div>
+                                    </div>
+                                    <div class="bench-row">
+                                        <div class="bench-meta"><span>Gemma 4 12B QAT (czysty model bazowy przed nauką)</span><b>66,5 pkt</b></div>
+                                        <div class="bench-track"><div class="bench-fill" style="width: 66.5%"></div></div>
+                                    </div>
+                                    <div class="bench-row">
+                                        <div class="bench-meta"><span>STARK-WEB v1.2 (po dodaniu 5% szumu Dropout i regularyzacji)</span><b>68,0 pkt</b></div>
+                                        <div class="bench-track"><div class="bench-fill" style="width: 68%"></div></div>
+                                    </div>
+                                    <div class="bench-row">
+                                        <div class="bench-meta"><span><b>STARK-WEB v1.3 (+77 trudnych zadań algorytmicznych, eval_loss 0,9149)</b></span><b>70,5 pkt</b></div>
+                                        <div class="bench-track"><div class="bench-fill bench-fill--hi" style="width: 88%"></div></div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="story-block">
+                                <p class="story-meta"><span>Historia 2 z 3</span><span>Znikające wagi i&nbsp;trening QAT</span></p>
+                                <h4>Jak nowa wiedza modelu dosłownie „wyparowała” i&nbsp;bieg z&nbsp;ciężkim plecakiem</h4>
+                                <p>Model 12B w&nbsp;pełnej precyzji zajmuje około 24&nbsp;GB, więc żeby działał szybko na&nbsp;zwykłym komputerze, trzeba go odchudzić do 4&nbsp;bitów. Kiedy po raz pierwszy połączyłem mój wyuczony „notatnik” LoRA bezpośrednio z&nbsp;modelem skompresowanym do 4&nbsp;bitów (NF4), wydarzyło się coś dziwnego: <b>cała nowa wiedza modelu zniknęła</b>. Drobne, precyzyjne poprawki wag z&nbsp;notatnika były tak małe, że na&nbsp;grubej, 4-bitowej siatce zaokrągliły się prosto do zera (zjawisko <em>Vanishing LoRA</em>). Model zachowywał się tak, jakby nigdy się nie uczył.</p>
+                                <p>Żeby zachować 100% precyzji (BFloat16), musiałem połączyć wagi poza kartą graficzną (16&nbsp;GB VRAM to za mało na&nbsp;24-gigabajtową operację) – bezpośrednio na&nbsp;<b>zwykłym procesorze (CPU) i&nbsp;pamięci RAM</b> domowego komputera, sprawdzając matematycznie normą L2 (<code>torch.norm()</code>), czy wagi faktycznie się zmieniły. Z&nbsp;kolei żeby po późniejszej kompresji do 4-bitowego pliku GGUF model nie gubił znaczników końca myślenia, zastosowałem trening <b>QAT (Quantization-Aware Training)</b> – czyli uczyłem model od samego początku tak, jakby „biegł z&nbsp;ciężkim plecakiem”, wiedząc zawczasu, że na&nbsp;końcu zostanie ściśnięty do 4&nbsp;bitów. Na&nbsp;deser musiałem jeszcze ręcznie załatać kod źródłowy narzędzia <code>llama.cpp</code>, bo nie rozpoznawało nowej klasy <code>Gemma4UnifiedForConditionalGeneration</code>.</p>
+                            </article>
+
+                            <article class="story-block">
+                                <p class="story-meta"><span>Historia 3 z 3</span><span>Anomalia w&nbsp;logach</span></p>
+                                <h4>Fałszywy alarm w&nbsp;wykresach (skok błędu z&nbsp;0,2 do 2,3)</h4>
+                                <p>Żeby zmieścić w&nbsp;16&nbsp;GB pamięci VRAM ogromny kontekst liczący aż 43&nbsp;000 tokenów, musiałem użyć kilku sztuczek inżynieryjnych: <b>Gradient Checkpointing</b> (oszczędność ok.&nbsp;60% VRAM przez przeliczanie aktywacji w&nbsp;locie) oraz <b>Paged AdamW 8-bit</b> (przerzucanie nieaktywnych stanów optymalizatora do zwykłego RAM-u). Podczas wielogodzinnego wpatrywania się w&nbsp;wykresy na&nbsp;koniec każdego etapu nauki (epoki) przeżywałem jednak mini-zawał.</p>
+                                <p>W logach błąd treningowy (<code>train_loss</code>), który przez cały czas trzymał się stabilnie w&nbsp;okolicach <b>0,2</b>, na&nbsp;samej granicy epoki nagle wystrzeliwał w&nbsp;górę do <b>2,3</b> – sugerując, że model właśnie uległ katastrofalnemu uszkodzeniu. Po prześwietleniu kodu okazało się, że to znany błąd w&nbsp;bibliotece <em>Hugging Face Transformers</em> przy nieliniowej akumulacji gradientów: na&nbsp;ostatniej, niepełnej paczce danych dzielnik w&nbsp;logach gubił skalę, podczas gdy pod maską wagi liczyły się całkowicie poprawnie.</p>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Zakończenie i linki (Dla chętnych: wersja „nerd”) -->
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <p class="label">Podsumowanie i&nbsp;dalsze plany</p>
+                        <h3>Darmowa premiera na&nbsp;Hugging Face i&nbsp;przeskok na&nbsp;26B</h3>
+                        <p>Wytrenowany model <b>STARK-WEB 12B</b> zostanie udostępniony całkowicie za darmo dla każdego w&nbsp;repozytorium <b>Hugging Face</b> na&nbsp;otwartej licencji <b>Apache 2.0</b> (pozwalającej na&nbsp;użytek prywatny, naukowy i&nbsp;komercyjny). Kolejnym krokiem jest przeniesienie tej samej metody 9-etapowego brudnopisu CoT oraz bazy danych na&nbsp;jeszcze większą architekturę – <b>Gemma 4 26B</b>, trenowaną już w&nbsp;chmurze na&nbsp;akceleratorach <b>NVIDIA A100</b>, aby całkowicie wyeliminować nawet najdrobniejsze błędy w&nbsp;złożonych systemach typu Browser OS.</p>
+
+                        <div class="article-foot">
+                            <div class="article-foot-text">
+                                <b>Dla chętnych: wersja „nerd”</b>
+                                <small>Chcesz zobaczyć pełną matematykę, wzory macierzy LoRA, tabele i&nbsp;bibliografię? Otwórz pełną pracę badawczą (z&nbsp;opcją zapisu do PDF).</small>
+                            </div>
+                            <a class="btn btn--primary" href="praca_naukowa_2.html" target="_blank" rel="noopener">
+                                <svg aria-hidden="true"><use href="#i-doc"/></svg>
+                                Otwórz pracę badawczą
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- ============ Narzędzia ============ -->
         <section class="view" id="narzedzia" data-view="narzedzia" data-title="Narzędzia – Situus" aria-labelledby="t-narzedzia">
             <div class="page">
@@ -1701,7 +2622,7 @@
                 <div class="glass pill back"><a class="glass-c" href="#narzedzia"><svg aria-hidden="true"><use href="#i-back"/></svg>Narzędzia</a></div>
 
                 <div class="app-head">
-                    <span class="app-icon app-icon--wrapped" aria-hidden="true"><svg><use href="#i-wrapped"/></svg></span>
+                    <span class="glass app-icon app-icon--wrapped" aria-hidden="true"><svg><use href="#i-wrapped"/></svg></span>
                     <div>
                         <h2 class="detail-title" id="t-wrapped" tabindex="-1">Messenger Wrapped</h2>
                         <p class="detail-sub">Statystyki rozmów z&nbsp;Messengera</p>
@@ -1740,7 +2661,7 @@
                 <div class="glass pill back"><a class="glass-c" href="#narzedzia"><svg aria-hidden="true"><use href="#i-back"/></svg>Narzędzia</a></div>
 
                 <div class="app-head">
-                    <span class="app-icon app-icon--chat" aria-hidden="true"><svg><use href="#i-chat"/></svg></span>
+                    <span class="glass app-icon app-icon--chat" aria-hidden="true"><svg><use href="#i-chat"/></svg></span>
                     <div>
                         <h2 class="detail-title" id="t-chat" tabindex="-1">Situus Chat</h2>
                         <p class="detail-sub">Eksperymentalny czat na&nbsp;modelu językowym</p>
@@ -1749,7 +2670,7 @@
                                 <svg data-locked-only aria-hidden="true"><use href="#i-lock"/></svg>
                                 <span data-unlocked-text="Otwórz czat">Otwórz czat</span>
                             </a>
-                            <a class="btn" href="mailto:situs1235@gmail.com?subject=Dost%C4%99p%20do%20Situus%20Chat" data-locked-only>Poproś o&nbsp;dostęp</a>
+                            <a class="btn" href="mailto:situus2@gmail.com?subject=Dost%C4%99p%20do%20Situus%20Chat" data-locked-only>Poproś o&nbsp;dostęp</a>
                         </div>
                     </div>
                 </div>
@@ -1784,12 +2705,12 @@
 
                 <div class="glass list-card">
                     <div class="glass-c">
-                        <a class="row" href="mailto:situs1235@gmail.com">
+                        <a class="row" href="mailto:situus2@gmail.com">
                             <span class="row-icon" aria-hidden="true"><svg><use href="#i-mail"/></svg></span>
-                            <span class="row-text"><b>E-mail</b><small>situs1235@gmail.com</small></span>
+                            <span class="row-text"><b>E-mail</b><small>situus2@gmail.com</small></span>
                             <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg>
                         </a>
-                        <a class="row" href="mailto:situs1235@gmail.com?subject=Dost%C4%99p%20do%20Situus%20Chat">
+                        <a class="row" href="mailto:situus2@gmail.com?subject=Dost%C4%99p%20do%20Situus%20Chat">
                             <span class="row-icon" aria-hidden="true"><svg><use href="#i-key"/></svg></span>
                             <span class="row-text"><b>Dostęp do Situus Chat</b><small>Napisz, kim jesteś</small></span>
                             <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg>
@@ -1808,12 +2729,22 @@
 
     <dialog id="chat-dialog" class="dialog" aria-labelledby="chat-dialog-title">
         <div class="dialog-body">
-            <span class="app-icon app-icon--chat" aria-hidden="true"><svg><use href="#i-lock"/></svg></span>
+            <span class="app-icon app-icon--chat" aria-hidden="true"><svg><use href="#i-chat-lock"/></svg></span>
             <h2 id="chat-dialog-title">Ten czat jest prywatny</h2>
             <p>Situus Chat działa tylko na&nbsp;zaufanych urządzeniach, a&nbsp;tego nie ma na&nbsp;liście.</p>
             <p class="quote">Kim jesteś? Jeśli cię znam i&nbsp;lubię, może dam ci dostęp. Zapytaj.</p>
             <div class="dialog-actions">
-                <a class="btn btn--primary" href="mailto:situs1235@gmail.com?subject=Dost%C4%99p%20do%20Situus%20Chat">Napisz o dostęp</a>
+                <a class="btn btn--primary" href="mailto:situus2@gmail.com?subject=Dost%C4%99p%20do%20Situus%20Chat">Napisz o dostęp</a>
+                <form method="dialog"><button class="btn">Zamknij</button></form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="zoom-dialog" class="dialog dialog--zoom" aria-label="Powiększony zrzut ekranu">
+        <div class="dialog-body">
+            <img id="zoom-dialog-img" src="" alt="">
+            <div class="dialog--zoom-bar">
+                <span id="zoom-dialog-caption"></span>
                 <form method="dialog"><button class="btn">Zamknij</button></form>
             </div>
         </div>
@@ -1829,7 +2760,7 @@
         (() => {
             const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
             const lowTransparency = matchMedia('(prefers-reduced-transparency: reduce)').matches;
-            const ORDER = ['start', 'muzyka', 'narzedzia', 'kontakt'];
+            const ORDER = ['start', 'muzyka', 'projekty', 'narzedzia', 'kontakt'];
             const sceneImg = document.querySelector('.scene img');
             let glassText = null;
 
@@ -2310,6 +3241,38 @@
                 }));
             })();
 
+            // --- Interaktywne okienko CoT oraz powiększanie screenów w artykułach ---
+            (() => {
+                const cotWidget = document.getElementById('cot-demo');
+                const cotBtn = document.getElementById('cot-demo-btn');
+                if (cotWidget && cotBtn) {
+                    const cotLbl = cotBtn.querySelector('[data-cot-label]');
+                    cotBtn.addEventListener('click', () => {
+                        const open = cotWidget.classList.toggle('is-open');
+                        cotBtn.setAttribute('aria-expanded', String(open));
+                        if (cotLbl) cotLbl.textContent = open ? 'Zwiń myśli' : 'Pokaż 9 kroków myślenia';
+                        animateGlass(360);
+                    });
+                }
+
+                const zoomDialog = document.getElementById('zoom-dialog');
+                const zoomImg = document.getElementById('zoom-dialog-img');
+                const zoomCap = document.getElementById('zoom-dialog-caption');
+                if (zoomDialog && zoomImg) {
+                    document.querySelectorAll('[data-zoom-img]').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            zoomImg.src = btn.dataset.zoomImg;
+                            zoomImg.alt = btn.dataset.zoomCaption || '';
+                            if (zoomCap) zoomCap.textContent = btn.dataset.zoomCaption || '';
+                            zoomDialog.showModal();
+                        });
+                    });
+                    zoomDialog.addEventListener('click', e => {
+                        if (e.target === zoomDialog) zoomDialog.close();
+                    });
+                }
+            })();
+
             show(routeOf(location.hash), true);
 
 
@@ -2360,10 +3323,13 @@
                     };
 
                     // Karty i widżety: przejrzyste, z szeroką fazą i lekkim powiększeniem jak w iOS
-                    liquidGL({ ...base, target: '.w-tracks, .w-apps, .list-card, .tl-card, .story, .tool-card, .info, .facts, .text-card', bevelWidth: 0.22, frost: 0.4, magnify: 1.025 });
+                    liquidGL({ ...base, target: '.w-tracks, .w-apps, .w-project, .project-card, .list-card, .tl-card, .story, .tool-card, .info, .facts, .text-card', bevelWidth: 0.22, frost: 0.4, magnify: 1.025 });
 
                     // Pigułki: faza na całą wysokość, więc tło zagina się od krawędzi do środka
                     liquidGL({ ...base, target: '.nav, .seg, .back, .human, .tl-now, .scrub-track, .preview-scrub', bevelWidth: 0.5, frost: 0.3, refraction: 1.4, magnify: 1.04 });
+
+                    // Duże ikony narzędzi w widoku szczegółów: wypukłe kostki płynnego szkła
+                    liquidGL({ ...base, target: '.app-head .app-icon', shadow: false, bevelWidth: 0.36, frost: 0.22, refraction: 1.45, bevelDepth: 1.15, aberration: 0.08, magnify: 1.08 });
 
                     // Koraliki na osi czasu: małe kulki szkła, mocno powiększają to, co pod nimi
                     liquidGL({ ...base, target: '.bead', bevelWidth: 0.5, frost: 0, refraction: 1.7, bevelDepth: 1.2, aberration: 0.1, magnify: 1.25 });

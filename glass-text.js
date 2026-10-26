@@ -168,7 +168,7 @@
         canvas.className = 'glass-text';
         canvas.setAttribute('aria-hidden', 'true');
         canvas.style.cssText = 'position:absolute;pointer-events:none;';
-        const gl = canvas.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false });
+        const gl = canvas.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false, preserveDrawingBuffer: true });
         if (!gl) return null;
 
         let program;
