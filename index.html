@@ -1758,7 +1758,9 @@
                 <span class="tab-fill" aria-hidden="true"></span>
                 <a class="tab" href="#start" data-tab="start">Situus</a>
                 <a class="tab" href="#muzyka" data-tab="muzyka">Muzyka</a>
-                <a class="tab" href="#projekty" data-tab="projekty">Projekty</a>
+                <!-- Projekty tymczasowo wyłączone: żeby włączyć, usuń <template> tutaj, przy widżecie na starcie
+                     i przy widokach Projekty/artykuł, a w skrypcie dopisz 'projekty' do ORDER -->
+                <template data-wylaczone="projekty"><a class="tab" href="#projekty" data-tab="projekty">Projekty</a></template>
                 <a class="tab" href="#narzedzia" data-tab="narzedzia">Narzędzia</a>
                 <a class="tab" href="#kontakt" data-tab="kontakt">Kontakt</a>
             </div>
@@ -1893,6 +1895,7 @@
                         </div>
                     </div>
 
+                    <template data-wylaczone="projekty">
                     <div class="glass w-project">
                         <a class="glass-c" href="#projekty/stark-web-12b">
                             <h2 class="label">Projekty</h2>
@@ -1915,6 +1918,7 @@
                             </div>
                         </a>
                     </div>
+                    </template>
                 </div>
             </div>
         </section>
@@ -2329,7 +2333,8 @@
             </div>
         </section>
 
-        <!-- ============ Projekty ============ -->
+        <!-- ============ Projekty (tymczasowo wyłączone razem z artykułem) ============ -->
+        <template data-wylaczone="projekty">
         <section class="view" id="projekty" data-view="projekty" data-title="Projekty – Situus" aria-labelledby="t-projekty">
             <div class="page">
                 <h2 class="page-title" id="t-projekty" tabindex="-1">Projekty</h2>
@@ -2586,6 +2591,7 @@
                 </div>
             </div>
         </section>
+        </template>
 
         <!-- ============ Narzędzia ============ -->
         <section class="view" id="narzedzia" data-view="narzedzia" data-title="Narzędzia – Situus" aria-labelledby="t-narzedzia">
@@ -2760,7 +2766,8 @@
         (() => {
             const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
             const lowTransparency = matchMedia('(prefers-reduced-transparency: reduce)').matches;
-            const ORDER = ['start', 'muzyka', 'projekty', 'narzedzia', 'kontakt'];
+            // Kolejność musi zgadzać się z kartami w pasku – 'projekty' wraca razem z ich zakładką
+            const ORDER = ['start', 'muzyka', 'narzedzia', 'kontakt'];
             const sceneImg = document.querySelector('.scene img');
             let glassText = null;
 

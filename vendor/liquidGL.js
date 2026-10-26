@@ -6682,7 +6682,7 @@ fn fs() -> @location(0) vec4<f32> {
       }
 
       if (this._anchor !== document.body) {
-        this._drawBackdropStrip(dprNow);
+        this._drawBackdropStrip();
       }
 
       const ownStart = this._frameLensRects.length;
@@ -6694,6 +6694,8 @@ fn fs() -> @location(0) vec4<f32> {
           lens._mirrorClipUpdater();
         }
       });
+
+      if (this._anchor !== document.body) this._clipToLenses();
 
       backend.endFrame();
       this._ownFrameLensRects = this._frameLensRects.slice(ownStart);
@@ -6760,7 +6762,7 @@ fn fs() -> @location(0) vec4<f32> {
       backend.clearRegions(clearRects);
     }
 
-    _drawBackdropStrip(dpr) {
+    _drawBackdropStrip() {
       const viewsEl =
         this._backdropRoot && this._backdropRoot.isConnected
           ? this._backdropRoot
@@ -6768,8 +6770,10 @@ fn fs() -> @location(0) vec4<f32> {
       if (!viewsEl) return;
       const stripRect = this._frameCanvasRect;
       if (!stripRect || stripRect.width <= 0 || stripRect.height <= 0) return;
+      // situus.pl: treść pod paskiem malujemy w 1/5 rozdzielczości – po powiększeniu
+      // jest rozmyta jak pod szkłem w iOS, nie gryzie się z napisami zakładek i maluje się szybciej
       const plan = NaughtyDOM.measure(viewsEl, {
-        scale: dpr,
+        scale: 0.2,
         viewportRect: {
           left: stripRect.left,
           top: stripRect.top,
@@ -6791,6 +6795,12 @@ fn fs() -> @location(0) vec4<f32> {
       const stripCanvas = (this._backdropStripCanvas ||=
         document.createElement("canvas"));
       NaughtyDOM.paint(plan, stripCanvas);
+      // Przygaszona jak pod .edge, żeby jasny tekst pod szkłem nie zalewał zakładek
+      const stripCtx = stripCanvas.getContext("2d");
+      stripCtx.globalCompositeOperation = "source-atop";
+      stripCtx.fillStyle = "rgba(8, 10, 26, 0.4)";
+      stripCtx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
+      stripCtx.globalCompositeOperation = "source-over";
       const stripContent = (this._backdropStripContent ||= {
         canvas: stripCanvas,
         version: 0,
@@ -6804,6 +6814,32 @@ fn fs() -> @location(0) vec4<f32> {
           w: this.canvas.width,
           h: this.canvas.height,
         });
+      }
+    }
+
+    // situus.pl: pasek ma pod szkłem kopię treści strony, więc poza soczewkami płótno
+    // musi być niewidoczne – inaczej tekst wokół paska się dubluje i znika przyciemnienie .edge
+    _clipToLenses() {
+      const origin = this._frameCanvasRect;
+      let d = "";
+      for (const lens of this.lenses) {
+        const r = lens._fluidDrawRect || lens.rectPx;
+        if (!r || r.width <= 0 || r.height <= 0) continue;
+        const x = r.left - origin.left;
+        const y = r.top - origin.top;
+        const w = r.width;
+        const h = r.height;
+        const k = Math.min(lens.radiusCss || 0, w / 2, h / 2);
+        d +=
+          `M${x + k} ${y}H${x + w - k}A${k} ${k} 0 0 1 ${x + w} ${y + k}` +
+          `V${y + h - k}A${k} ${k} 0 0 1 ${x + w - k} ${y + h}` +
+          `H${x + k}A${k} ${k} 0 0 1 ${x} ${y + h - k}` +
+          `V${y + k}A${k} ${k} 0 0 1 ${x + k} ${y}Z`;
+      }
+      const clip = d ? `path("${d}")` : "inset(50%)";
+      if (clip !== this._canvasClip) {
+        this._canvasClip = clip;
+        this.canvas.style.clipPath = clip;
       }
     }
 
