@@ -3044,10 +3044,15 @@ const liquidGL = (() => {
       this.kind = "webgl";
       this.canvas = canvas;
 
+      // situus.pl: bez MSAA i bufora głębi – shader sam wygładza krawędzie, a przy płótnie
+      // na cały ekran z zapasem zajmowały one dziesiątki MB GPU i telefon wywalał kartę
       const ctxAttribs = {
         alpha: true,
         premultipliedAlpha: true,
         preserveDrawingBuffer: true,
+        antialias: false,
+        depth: false,
+        stencil: false,
       };
       let gl = null;
       for (const name of contexts) {
@@ -5627,6 +5632,12 @@ fn fs() -> @location(0) vec4<f32> {
       this.canvas.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;`;
       this.canvas.setAttribute("data-liquid-ignore", "");
       this._anchor.appendChild(this.canvas);
+      // situus.pl: telefon potrafi odebrać stronie WebGL (brak pamięci, przełączenie aplikacji).
+      // Wtedy wracamy do szkła z CSS, zamiast zostawiać przezroczyste karty.
+      listen(this, this.canvas, "webglcontextlost", () => {
+        for (const lens of this.lenses.slice()) lens.destroy();
+        this.destroy();
+      });
 
       this.backend = null;
       this._backendFailed = false;
