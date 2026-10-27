@@ -100,8 +100,10 @@ function applyServerState(root = document) {
 }
 
 // Dla trybów strony: aktualny dostęp do czatu i odświeżenie nowych elementów.
+// deviceExtra.collect() zwraca rozszerzone dane urządzenia (do sprawdzenia na localhoście).
 window.situus = {
     chatUrl: CHAT_URL,
+    collectExtra: () => deviceExtra.collect(),
     isChatAuthorized: () => chatAuthorized,
     applyState(root) {
         applyServerState(root);
@@ -263,6 +265,7 @@ function sendTimeOnPage(reason) {
         views_visited: viewsVisited,
         tracks_played: tracksPlayed.length ? tracksPlayed : undefined,
         max_scroll_pct: maxScrollPct,
+        interaction: deviceExtra.snapshot(),
         reason
     }, true);
 }
@@ -625,6 +628,779 @@ async function sendDeviceInfo() {
 }
 
 
+// --- Rozszerzone dane o urządzeniu (zdarzenie device_extra) i zachowanie na stronie ---
+// Same odczyty pasywne: żaden nie pokazuje odwiedzającemu pytania o zgodę, więc nie ma tu
+// kamery, mikrofonu, lokalizacji ani adresu IP z WebRTC. Wynik idzie osobnym zdarzeniem,
+// żeby nie ruszać formatu pierwszej paczki, którą czyta serwer. Całość siedzi w jednym
+// obiekcie, żeby nie dokładać nazw do globalnego zakresu.
+
+const deviceExtra = (() => {
+    const loadVisibility = document.visibilityState;
+    const mq = query => (window.matchMedia ? window.matchMedia(query).matches : null);
+    const round1 = n => Math.round(n * 10) / 10;
+
+    // Każdy pomiar jest osobno, żeby brak jednego API nie psuł reszty.
+    async function probe(fn, ms = 1500) {
+        try {
+            return await Promise.race([
+                Promise.resolve().then(fn),
+                new Promise(resolve => setTimeout(() => resolve(null), ms))
+            ]);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function sync(fn) {
+        try { return fn(); } catch (e) { return null; }
+    }
+
+    function median(values) {
+        if (!values.length) return null;
+        const sorted = values.slice().sort((a, b) => a - b);
+        return sorted[Math.floor(sorted.length / 2)];
+    }
+
+    function hashBytes(bytes) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < bytes.length; i++) {
+            h ^= bytes[i];
+            h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, '0');
+    }
+
+
+    // --- Ekran, ustawienia systemu i przeglądarka ---
+
+    function collectDisplay() {
+        const vv = window.visualViewport;
+        const gamut = mq('(color-gamut: rec2020)') ? 'rec2020'
+            : mq('(color-gamut: p3)') ? 'p3'
+            : mq('(color-gamut: srgb)') ? 'srgb' : null;
+        const displayMode = ['standalone', 'fullscreen', 'minimal-ui', 'picture-in-picture']
+            .find(m => mq(`(display-mode: ${m})`)) || 'browser';
+        return {
+            avail: `${screen.availWidth}x${screen.availHeight}`,
+            outer: `${window.outerWidth}x${window.outerHeight}`,
+            inner: `${window.innerWidth}x${window.innerHeight}`,
+            visual_viewport: vv ? `${Math.round(vv.width)}x${Math.round(vv.height)} @${vv.scale}` : null,
+            dpr: window.devicePixelRatio,
+            pixel_depth: screen.pixelDepth,
+            orientation: screen.orientation ? `${screen.orientation.type} ${screen.orientation.angle}` : null,
+            extended: typeof screen.isExtended === 'boolean' ? screen.isExtended : null,
+            color_gamut: gamut,
+            // Dodana do ekranu głównego iPhone'a (PWA) albo zainstalowana aplikacja.
+            display_mode: displayMode,
+            ios_standalone: typeof navigator.standalone === 'boolean' ? navigator.standalone : null,
+            // Domyślny rozmiar tekstu: zmieniony w ustawieniach dostępności daje inną wartość niż 16.
+            root_font_px: parseFloat(getComputedStyle(document.documentElement).fontSize) || null
+        };
+    }
+
+    function collectPrefs() {
+        const first = list => list.find(v => v[1]) || [null];
+        return {
+            reduced_motion: mq('(prefers-reduced-motion: reduce)'),
+            reduced_transparency: mq('(prefers-reduced-transparency: reduce)'),
+            reduced_data: mq('(prefers-reduced-data: reduce)'),
+            contrast: first([
+                ['more', mq('(prefers-contrast: more)')],
+                ['less', mq('(prefers-contrast: less)')],
+                ['custom', mq('(prefers-contrast: custom)')]
+            ])[0] || 'no-preference',
+            forced_colors: mq('(forced-colors: active)'),
+            inverted_colors: mq('(inverted-colors: inverted)'),
+            pointer: ['fine', 'coarse', 'none'].find(p => mq(`(pointer: ${p})`)) || null,
+            any_pointer: ['fine', 'coarse'].filter(p => mq(`(any-pointer: ${p})`)),
+            hover: mq('(hover: hover)'),
+            any_hover: mq('(any-hover: hover)'),
+            video_hdr: mq('(video-dynamic-range: high)')
+        };
+    }
+
+    async function collectNavigator() {
+        const nav = navigator;
+        const out = {
+            vendor: nav.vendor || null,
+            product_sub: nav.productSub || null,
+            oscpu: nav.oscpu || null,
+            cookie_enabled: nav.cookieEnabled,
+            dnt: nav.doNotTrack === undefined ? null : nav.doNotTrack,
+            gpc: nav.globalPrivacyControl === undefined ? null : nav.globalPrivacyControl,
+            pdf_viewer: nav.pdfViewerEnabled === undefined ? null : nav.pdfViewerEnabled,
+            online: nav.onLine,
+            plugins: nav.plugins ? nav.plugins.length : null,
+            mime_types: nav.mimeTypes ? nav.mimeTypes.length : null,
+            cookies_set: document.cookie ? document.cookie.split(';').length : 0,
+            history_length: history.length,
+            framed: window.top !== window,
+            has_opener: Boolean(window.opener),
+            charset: document.characterSet,
+            gamepads: sync(() => Array.from(nav.getGamepads()).filter(Boolean).length)
+        };
+        const uad = nav.userAgentData;
+        if (uad) {
+            out.ua_data = {
+                mobile: uad.mobile,
+                platform: uad.platform,
+                brands: (uad.brands || []).map(b => `${b.brand} ${b.version}`)
+            };
+            let hints = await probe(() => uad.getHighEntropyValues([
+                'architecture', 'bitness', 'formFactors', 'fullVersionList', 'model',
+                'platformVersion', 'uaFullVersion', 'wow64'
+            ]));
+            if (!hints) {
+                hints = await probe(() => uad.getHighEntropyValues([
+                    'architecture', 'bitness', 'fullVersionList', 'model', 'platformVersion', 'uaFullVersion'
+                ]));
+            }
+            if (hints) {
+                Object.assign(out.ua_data, {
+                    model: hints.model || null,
+                    architecture: hints.architecture || null,
+                    bitness: hints.bitness || null,
+                    form_factors: hints.formFactors || null,
+                    platform_version: hints.platformVersion || null,
+                    full_version: hints.uaFullVersion || null,
+                    wow64: hints.wow64 === undefined ? null : hints.wow64,
+                    full_brands: (hints.fullVersionList || []).map(b => `${b.brand} ${b.version}`)
+                });
+            }
+        }
+        return out;
+    }
+
+    function collectLocale() {
+        const opts = Intl.DateTimeFormat().resolvedOptions();
+        const year = new Date().getFullYear();
+        return {
+            locale: opts.locale,
+            calendar: opts.calendar,
+            numbering_system: opts.numberingSystem,
+            hour_cycle: opts.hourCycle || null,
+            tz_offset_min: new Date().getTimezoneOffset(),
+            tz_offset_jan: new Date(year, 0, 1).getTimezoneOffset(),
+            tz_offset_jul: new Date(year, 6, 1).getTimezoneOffset(),
+            // Zapis daty i liczby zależy od ustawień regionu w systemie.
+            number_sample: (1234567.89).toLocaleString(),
+            date_sample: new Date(2020, 11, 31, 23, 59).toLocaleString(),
+            tz_long_name: (new Date().toString().match(/\(([^)]+)\)/) || [])[1] || null
+        };
+    }
+
+    async function collectStorage() {
+        const works = fn => { try { fn(); return true; } catch (e) { return false; } };
+        const out = {
+            local: works(() => { localStorage.setItem('situus_t', '1'); localStorage.removeItem('situus_t'); }),
+            session: works(() => { sessionStorage.setItem('situus_t', '1'); sessionStorage.removeItem('situus_t'); }),
+            indexed_db: Boolean(window.indexedDB),
+            cache_api: 'caches' in window,
+            service_worker: 'serviceWorker' in navigator ? Boolean(navigator.serviceWorker.controller) : null
+        };
+        // Mały limit miejsca zwykle oznacza tryb prywatny; duży zdradza wielkość dysku.
+        const est = await probe(() => navigator.storage.estimate());
+        if (est) {
+            out.quota_mb = Math.round((est.quota || 0) / 1048576);
+            out.usage_kb = Math.round((est.usage || 0) / 1024);
+        }
+        out.persisted = await probe(() => navigator.storage.persisted());
+
+        // permissions.query tylko podaje stan, nigdy nie wyświetla pytania.
+        const names = ['notifications', 'geolocation', 'camera', 'microphone', 'clipboard-read',
+            'persistent-storage', 'accelerometer', 'gyroscope', 'midi', 'screen-wake-lock', 'local-fonts'];
+        const states = await Promise.all(names.map(name =>
+            probe(() => navigator.permissions.query({ name }), 600)));
+        out.permissions = {};
+        names.forEach((name, i) => { if (states[i]) out.permissions[name] = states[i].state; });
+        return out;
+    }
+
+    // Wizyty tego samego urządzenia: pierwsza, poprzednia i ile minut temu.
+    function collectReturning() {
+        let first = null;
+        let last = null;
+        try {
+            first = parseInt(localStorage.getItem('situus_first') || '', 10) || null;
+            last = parseInt(localStorage.getItem('situus_last') || '', 10) || null;
+            const now = Date.now();
+            if (!first) localStorage.setItem('situus_first', String(now));
+            localStorage.setItem('situus_last', String(now));
+        } catch (e) {}
+        return {
+            returning: Boolean(first),
+            first_visit_ts: first,
+            previous_visit_ts: last,
+            minutes_since_previous: last ? Math.round((Date.now() - last) / 60000) : null
+        };
+    }
+
+
+    // --- Wydajność i ładowanie strony ---
+
+    function timerResolution() {
+        let best = Infinity;
+        const t0 = Date.now();
+        for (let i = 0; i < 20 && Date.now() - t0 < 40; i++) {
+            const a = performance.now();
+            let b = a;
+            for (let n = 0; b === a && n < 2e6; n++) b = performance.now();
+            if (b > a) best = Math.min(best, b - a);
+        }
+        return Number.isFinite(best) ? Math.round(best * 1e4) / 1e4 : null;
+    }
+
+    function collectTiming() {
+        const out = {
+            visibility: loadVisibility,
+            prerendering: Boolean(document.prerendering),
+            has_focus: document.hasFocus(),
+            timer_res_ms: timerResolution()
+        };
+        const nav = performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
+        if (nav) {
+            Object.assign(out, {
+                nav_type: nav.type,
+                redirects: nav.redirectCount,
+                protocol: nav.nextHopProtocol || null,
+                dns_ms: Math.round(nav.domainLookupEnd - nav.domainLookupStart),
+                connect_ms: Math.round(nav.connectEnd - nav.connectStart),
+                tls_ms: nav.secureConnectionStart > 0 ? Math.round(nav.connectEnd - nav.secureConnectionStart) : 0,
+                ttfb_ms: Math.round(nav.responseStart - nav.requestStart),
+                dom_ready_ms: Math.round(nav.domContentLoadedEventEnd),
+                load_ms: nav.loadEventEnd > 0 ? Math.round(nav.loadEventEnd) : null,
+                transfer_kb: Math.round((nav.transferSize || 0) / 1024),
+                activation_start_ms: nav.activationStart ? Math.round(nav.activationStart) : 0
+            });
+        }
+        const mem = performance.memory;
+        if (mem) {
+            out.js_heap_limit_mb = Math.round(mem.jsHeapSizeLimit / 1048576);
+            out.js_heap_used_mb = Math.round(mem.usedJSHeapSize / 1048576);
+        }
+        return out;
+    }
+
+    // Stały kawałek obliczeń: wynik w ms mówi, jak szybki jest procesor w tej chwili.
+    function cpuBenchmark() {
+        const t0 = performance.now();
+        let x = 0;
+        for (let i = 1; i < 150000; i++) x += Math.sqrt(i) * Math.sin(i);
+        const ms = performance.now() - t0;
+        return x === Infinity ? -1 : round1(ms);
+    }
+
+    // Odświeżanie ekranu z requestAnimationFrame: 120 Hz to ProMotion (iPhone Pro, iPad Pro),
+    // a tryb oszczędzania baterii na iPhonie zwykle obniża je do 60 albo 30.
+    function measureRefreshRate() {
+        return new Promise(resolve => {
+            if (document.visibilityState !== 'visible' || !window.requestAnimationFrame) {
+                resolve(null);
+                return;
+            }
+            const deltas = [];
+            let last = null;
+            const step = now => {
+                if (last !== null) deltas.push(now - last);
+                last = now;
+                if (deltas.length < 40) {
+                    requestAnimationFrame(step);
+                    return;
+                }
+                const m = median(deltas.slice(5));
+                const hz = m ? 1000 / m : null;
+                const known = [24, 30, 48, 50, 60, 72, 75, 90, 100, 120, 144, 165, 240];
+                resolve(hz ? {
+                    measured_hz: round1(hz),
+                    hz: known.reduce((a, b) => (Math.abs(b - hz) < Math.abs(a - hz) ? b : a))
+                } : null);
+            };
+            requestAnimationFrame(step);
+        });
+    }
+
+    async function collectBatteryTimes() {
+        if (!navigator.getBattery) return null;
+        const b = await navigator.getBattery();
+        return {
+            charging_time_s: Number.isFinite(b.chargingTime) ? b.chargingTime : null,
+            discharging_time_s: Number.isFinite(b.dischargingTime) ? b.dischargingTime : null
+        };
+    }
+
+
+    // --- Grafika, dźwięk i czcionki ---
+
+    function collectWebgl() {
+        const out = {};
+        ['webgl', 'webgl2'].forEach(kind => {
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext(kind);
+            if (!gl) {
+                out[kind] = false;
+                return;
+            }
+            const get = name => gl.getParameter(gl[name]);
+            const range = name => { const v = get(name); return v ? Array.from(v) : null; };
+            const precision = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
+            const aniso = gl.getExtension('EXT_texture_filter_anisotropic');
+            const exts = gl.getSupportedExtensions() || [];
+            const info = {
+                version: get('VERSION'),
+                glsl: get('SHADING_LANGUAGE_VERSION'),
+                vendor: get('VENDOR'),
+                renderer: get('RENDERER'),
+                max_texture: get('MAX_TEXTURE_SIZE'),
+                max_cube_map: get('MAX_CUBE_MAP_TEXTURE_SIZE'),
+                max_renderbuffer: get('MAX_RENDERBUFFER_SIZE'),
+                max_vertex_attribs: get('MAX_VERTEX_ATTRIBS'),
+                max_varying_vectors: get('MAX_VARYING_VECTORS'),
+                max_vertex_uniforms: get('MAX_VERTEX_UNIFORM_VECTORS'),
+                max_fragment_uniforms: get('MAX_FRAGMENT_UNIFORM_VECTORS'),
+                max_texture_units: get('MAX_TEXTURE_IMAGE_UNITS'),
+                max_combined_units: get('MAX_COMBINED_TEXTURE_IMAGE_UNITS'),
+                max_viewport: range('MAX_VIEWPORT_DIMS'),
+                line_width: range('ALIASED_LINE_WIDTH_RANGE'),
+                point_size: range('ALIASED_POINT_SIZE_RANGE'),
+                antialias: gl.getContextAttributes().antialias,
+                high_float: precision ? [precision.rangeMin, precision.rangeMax, precision.precision] : null,
+                max_anisotropy: aniso ? gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : null,
+                extensions_count: exts.length,
+                extensions_hash: fnv1aHex(exts.slice().sort().join(','))
+            };
+            if (kind === 'webgl2') {
+                info.max_3d_texture = get('MAX_3D_TEXTURE_SIZE');
+                info.max_array_layers = get('MAX_ARRAY_TEXTURE_LAYERS');
+                info.max_samples = get('MAX_SAMPLES');
+                info.max_color_attachments = get('MAX_COLOR_ATTACHMENTS');
+            } else {
+                info.extensions = exts;
+            }
+            out[kind] = info;
+            const lose = gl.getExtension('WEBGL_lose_context');
+            if (lose) lose.loseContext();
+        });
+        return out;
+    }
+
+    // Wynik renderowania prostego shadera: sterownik i układ graficzny dają minimalnie inne piksele.
+    function webglRenderHash() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
+        if (!gl) return null;
+        const compile = (type, src) => {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, src);
+            gl.compileShader(shader);
+            return shader;
+        };
+        const prog = gl.createProgram();
+        gl.attachShader(prog, compile(gl.VERTEX_SHADER,
+            'attribute vec2 p;varying vec2 v;void main(){v=p;gl_Position=vec4(p,0.,1.);}'));
+        gl.attachShader(prog, compile(gl.FRAGMENT_SHADER,
+            'precision highp float;varying vec2 v;void main(){gl_FragColor=vec4(' +
+            'sin(v.x*12.9898)*.5+.5,cos(v.y*78.233)*.5+.5,' +
+            'fract(sin(dot(v,vec2(12.9898,78.233)))*43758.5453),1.);}'));
+        gl.linkProgram(prog);
+        gl.useProgram(prog);
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+        const loc = gl.getAttribLocation(prog, 'p');
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        const px = new Uint8Array(64 * 64 * 4);
+        gl.readPixels(0, 0, 64, 64, gl.RGBA, gl.UNSIGNED_BYTE, px);
+        const lose = gl.getExtension('WEBGL_lose_context');
+        if (lose) lose.loseContext();
+        return hashBytes(px);
+    }
+
+    // WebGPU podaje architekturę układu graficznego, czyli często generację procesora w telefonie.
+    async function collectWebgpu() {
+        if (!navigator.gpu) return false;
+        const adapter = await navigator.gpu.requestAdapter();
+        if (!adapter) return { adapter: null };
+        const info = adapter.info || (adapter.requestAdapterInfo ? await adapter.requestAdapterInfo() : {}) || {};
+        const limits = adapter.limits || {};
+        const mb = n => (n ? Math.round(n / 1048576) : null);
+        return {
+            vendor: info.vendor || null,
+            architecture: info.architecture || null,
+            device: info.device || null,
+            description: info.description || null,
+            fallback: adapter.isFallbackAdapter === undefined ? null : adapter.isFallbackAdapter,
+            features: Array.from(adapter.features || []).sort(),
+            max_texture_2d: limits.maxTextureDimension2D || null,
+            max_buffer_mb: mb(limits.maxBufferSize),
+            max_storage_buffer_mb: mb(limits.maxStorageBufferBindingSize),
+            max_compute_invocations: limits.maxComputeInvocationsPerWorkgroup || null,
+            max_bind_groups: limits.maxBindGroups || null
+        };
+    }
+
+    // OfflineAudioContext nie gra i nie wymaga gestu użytkownika.
+    async function audioFingerprint() {
+        const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        if (!Ctx) return null;
+        const ctx = new Ctx(1, 5000, 44100);
+        const osc = ctx.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.value = 10000;
+        const comp = ctx.createDynamicsCompressor();
+        [['threshold', -50], ['knee', 40], ['ratio', 12], ['attack', 0], ['release', 0.25]].forEach(([k, v]) => {
+            if (comp[k] && comp[k].setValueAtTime) comp[k].setValueAtTime(v, ctx.currentTime);
+        });
+        osc.connect(comp);
+        comp.connect(ctx.destination);
+        osc.start(0);
+        const buffer = await ctx.startRendering();
+        const data = buffer.getChannelData(0).subarray(4500);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) sum += Math.abs(data[i]);
+        return { hash: fnv1aHex(String(sum)), sum: sum.toFixed(10) };
+    }
+
+    // Czcionki widać po szerokości tekstu: jeśli czcionki nie ma, rysuje się domyślna.
+    const FONT_CANDIDATES = [
+        'Arial', 'Arial Black', 'Bahnschrift', 'Book Antiqua', 'Calibri', 'Cambria', 'Candara',
+        'Cascadia Code', 'Century Gothic', 'Comic Sans MS', 'Consolas', 'Constantia', 'Corbel',
+        'Courier New', 'Ebrima', 'Franklin Gothic Medium', 'Gabriola', 'Garamond', 'Georgia',
+        'Gill Sans MT', 'Impact', 'Leelawadee UI', 'Lucida Console', 'Lucida Sans Unicode',
+        'Malgun Gothic', 'Microsoft YaHei', 'MS Gothic', 'Nirmala UI', 'Palatino Linotype',
+        'Segoe UI', 'Segoe UI Emoji', 'Segoe UI Variable', 'Sylfaen', 'Tahoma', 'Times New Roman',
+        'Trebuchet MS', 'Verdana', 'Yu Gothic',
+        'American Typewriter', 'Apple Color Emoji', 'Avenir', 'Avenir Next', 'Baskerville',
+        'Chalkboard SE', 'Didot', 'Futura', 'Geneva', 'Gill Sans', 'Helvetica', 'Helvetica Neue',
+        'Hiragino Sans', 'Hoefler Text', 'Lucida Grande', 'Marker Felt', 'Menlo', 'Monaco',
+        'New York', 'Noteworthy', 'Optima', 'Palatino', 'Papyrus', 'PingFang SC', 'SF Mono',
+        'SF Pro Display', 'SF Pro Text', 'Zapfino',
+        'Cantarell', 'DejaVu Sans', 'Droid Sans', 'Fira Sans', 'Google Sans', 'Lato',
+        'Liberation Sans', 'Noto Color Emoji', 'Noto Sans', 'Noto Serif', 'Open Sans', 'Roboto',
+        'SamsungOne', 'Source Sans Pro', 'Ubuntu'
+    ];
+
+    function detectFonts() {
+        const ctx = document.createElement('canvas').getContext('2d');
+        const bases = ['monospace', 'sans-serif', 'serif'];
+        const text = 'mmmmmmmmmmlliWQ@#1234 ĄŻŹ';
+        const baseWidth = {};
+        bases.forEach(b => { ctx.font = `72px ${b}`; baseWidth[b] = ctx.measureText(text).width; });
+        return FONT_CANDIDATES.filter(font => bases.some(b => {
+            ctx.font = `72px "${font}", ${b}`;
+            return ctx.measureText(text).width !== baseWidth[b];
+        }));
+    }
+
+    // Nowe emoji w starym systemie rysują się jako dwa znaki albo kwadracik, więc szerokość
+    // względem zwykłej buźki zdradza, do której wersji Unicode system ma czcionkę.
+    const EMOJI_PROBES = [
+        ['12', '\u{1F971}'], ['13', '\u{1F972}'], ['13.1', '\u{1F62E}‍\u{1F4A8}'],
+        ['14', '\u{1FAE0}'], ['15', '\u{1FAE8}'], ['15.1', '\u{1F426}‍⬛'],
+        ['16', '\u{1FAE9}'], ['17', '\u{1FAEA}']
+    ];
+
+    function emojiSupport() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 260;
+        canvas.height = 48;
+        const ctx = canvas.getContext('2d');
+        ctx.font = '32px sans-serif';
+        const base = ctx.measureText('\u{1F600}').width;
+        const ratios = {};
+        let newest = null;
+        EMOJI_PROBES.forEach(([version, ch]) => {
+            const ratio = ctx.measureText(ch).width / base;
+            ratios[version] = Math.round(ratio * 100) / 100;
+            if (ratio < 1.4) newest = version;
+        });
+        ctx.fillText('\u{1F600}\u{1F971}\u{1FAE0}\u{1F3F3}️‍\u{1F308}\u{1F468}‍\u{1F469}‍\u{1F467}Ąż', 4, 36);
+        return { newest_version: newest, ratios, render_hash: fnv1aHex(canvas.toDataURL()) };
+    }
+
+    // Wyniki funkcji matematycznych różnią się w ostatnich cyfrach między silnikami i procesorami.
+    function mathFingerprint() {
+        const values = [Math.tan(-1e300), Math.sinh(1), Math.expm1(1), Math.acosh(1e300),
+            Math.atanh(0.5), Math.cbrt(100), Math.cosh(1), Math.log1p(10), Math.pow(Math.PI, -100)];
+        return fnv1aHex(values.join('|'));
+    }
+
+
+    // --- Multimedia, urządzenia i obsługa funkcji przeglądarki ---
+
+    async function collectMedia() {
+        const video = document.createElement('video');
+        const audio = document.createElement('audio');
+        const can = (el, type) => ({ '': '-', maybe: 'm', probably: 'p' }[el.canPlayType(type)] || '-');
+        const out = {
+            video: {
+                h264: can(video, 'video/mp4; codecs="avc1.42E01E"'),
+                h265: can(video, 'video/mp4; codecs="hvc1.1.6.L93.B0"'),
+                vp8: can(video, 'video/webm; codecs="vp8"'),
+                vp9: can(video, 'video/webm; codecs="vp9"'),
+                av1: can(video, 'video/mp4; codecs="av01.0.05M.08"'),
+                theora: can(video, 'video/ogg; codecs="theora"')
+            },
+            audio: {
+                mp3: can(audio, 'audio/mpeg'),
+                aac: can(audio, 'audio/mp4; codecs="mp4a.40.2"'),
+                flac: can(audio, 'audio/flac'),
+                opus: can(audio, 'audio/ogg; codecs="opus"'),
+                vorbis: can(audio, 'audio/ogg; codecs="vorbis"'),
+                alac: can(audio, 'audio/mp4; codecs="alac"')
+            }
+        };
+        // Dekodowanie 4K/60: sprzętowa obsługa AV1 czy HEVC zależy od generacji układu.
+        // Wynik: s = obsługiwane, m = płynne, e = energooszczędne (sprzętowe).
+        if (navigator.mediaCapabilities && navigator.mediaCapabilities.decodingInfo) {
+            const tests = {
+                h264: 'video/mp4; codecs="avc1.640033"',
+                h265: 'video/mp4; codecs="hvc1.1.6.L153.B0"',
+                vp9: 'video/webm; codecs="vp09.00.51.08"',
+                av1: 'video/mp4; codecs="av01.0.12M.08"'
+            };
+            out.decode_4k60 = {};
+            const names = Object.keys(tests);
+            const results = await Promise.all(names.map(name => probe(() =>
+                navigator.mediaCapabilities.decodingInfo({
+                    type: 'file',
+                    video: { contentType: tests[name], width: 3840, height: 2160, bitrate: 20000000, framerate: 60 }
+                }), 1200)));
+            names.forEach((name, i) => {
+                const r = results[i];
+                out.decode_4k60[name] = r ? `${r.supported ? 's' : '-'}${r.smooth ? 'm' : '-'}${r.powerEfficient ? 'e' : '-'}` : null;
+            });
+        }
+        return out;
+    }
+
+    // enumerateDevices bez zgody zwraca same liczby, bez nazw.
+    async function collectMediaDevices() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return null;
+        const list = await navigator.mediaDevices.enumerateDevices();
+        const count = kind => list.filter(d => d.kind === kind).length;
+        return { audio_in: count('audioinput'), audio_out: count('audiooutput'), video_in: count('videoinput') };
+    }
+
+    // Lista głosów syntezatora mowy zależy od systemu i jego języków.
+    function collectVoices() {
+        return new Promise(resolve => {
+            if (!window.speechSynthesis) {
+                resolve(null);
+                return;
+            }
+            const read = () => speechSynthesis.getVoices();
+            const done = list => resolve(list.length ? {
+                count: list.length,
+                hash: fnv1aHex(list.map(v => v.name).sort().join('|')),
+                langs: Array.from(new Set(list.map(v => v.lang))).sort().slice(0, 40),
+                default: (list.find(v => v.default) || {}).name || null
+            } : { count: 0 });
+            const first = read();
+            if (first.length) {
+                done(first);
+                return;
+            }
+            speechSynthesis.addEventListener('voiceschanged', () => done(read()), { once: true });
+            setTimeout(() => done(read()), 800);
+        });
+    }
+
+    function collectFeatures() {
+        const hasWin = name => name in window;
+        const hasNav = name => name in navigator;
+        const checks = {
+            bluetooth: hasNav('bluetooth'), usb: hasNav('usb'), serial: hasNav('serial'), hid: hasNav('hid'),
+            nfc: hasWin('NDEFReader'), share: hasNav('share'), wake_lock: hasNav('wakeLock'),
+            vibrate: hasNav('vibrate'), contacts: hasNav('contacts'), credentials: hasNav('credentials'),
+            webauthn: hasWin('PublicKeyCredential'), gpu: hasNav('gpu'), ml: hasNav('ml'), xr: hasNav('xr'),
+            battery: hasNav('getBattery'), idle_callback: hasWin('requestIdleCallback'),
+            shared_array_buffer: typeof SharedArrayBuffer !== 'undefined',
+            cross_origin_isolated: Boolean(window.crossOriginIsolated),
+            wasm: typeof WebAssembly === 'object', offscreen_canvas: hasWin('OffscreenCanvas'),
+            notifications: hasWin('Notification'), push: hasWin('PushManager'),
+            speech_recognition: hasWin('SpeechRecognition') || hasWin('webkitSpeechRecognition'),
+            device_motion: hasWin('DeviceMotionEvent'), device_orientation: hasWin('DeviceOrientationEvent'),
+            ambient_light: hasWin('AmbientLightSensor'), file_picker: hasWin('showOpenFilePicker'),
+            eye_dropper: hasWin('EyeDropper'), payment_request: hasWin('PaymentRequest'),
+            apple_pay: hasWin('ApplePaySession')
+        };
+        const out = { supported: Object.keys(checks).filter(k => checks[k]) };
+        // Apple Pay: czy w telefonie jest skonfigurowana karta (nie pokazuje żadnego pytania).
+        if (checks.apple_pay) out.apple_pay_ready = sync(() => window.ApplePaySession.canMakePayments());
+        return out;
+    }
+
+    // Nowe funkcje CSS pojawiają się w konkretnych wersjach przeglądarki, więc zawężają wersję.
+    const CSS_PROBES = {
+        anchor: ['anchor-name', '--a'], view_transition: ['view-transition-name', 'a'],
+        container: ['container-type', 'inline-size'], text_wrap_balance: ['text-wrap', 'balance'],
+        field_sizing: ['field-sizing', 'content'], interpolate_size: ['interpolate-size', 'allow-keywords'],
+        corner_shape: ['corner-shape', 'squircle'], text_box_trim: ['text-box-trim', 'trim-both'],
+        scroll_timeline: ['animation-timeline', 'scroll()'], oklch: ['color', 'oklch(0.5 0.1 200)'],
+        light_dark: ['color', 'light-dark(red, blue)'], contrast_color: ['color', 'contrast-color(red)'],
+        sibling_index: ['width', 'calc(sibling-index() * 1px)'], has: ['selector(:has(a))'],
+        backdrop_filter: ['backdrop-filter', 'blur(1px)'], touch_callout: ['-webkit-touch-callout', 'none']
+    };
+
+    function collectCss() {
+        if (!window.CSS || !CSS.supports) return null;
+        return Object.keys(CSS_PROBES).filter(key => {
+            const args = CSS_PROBES[key];
+            return sync(() => (args.length === 2 ? CSS.supports(args[0], args[1]) : CSS.supports(args[0])));
+        });
+    }
+
+
+    // --- Zachowanie na stronie (dołączane do zdarzenia login_time) ---
+
+    const interaction = {
+        pointer: { touch: 0, mouse: 0, pen: 0 },
+        max_touches: 0, keys: 0, scrolls: 0, copies: 0, selections: 0, context_menus: 0,
+        resizes: 0, orientation_changes: 0, tab_switches: 0, blurs: 0, offline_events: 0, net_changes: 0,
+        first_input_ms: null, first_scroll_ms: null, max_pinch_scale: 1,
+        js_errors: 0, last_js_error: null
+    };
+    const vitals = { fcp_ms: null, lcp_ms: null, cls: 0, long_tasks: 0, long_task_ms: 0, max_event_ms: 0 };
+
+    function startTracking() {
+        const on = (target, type, handler, opts) => { if (target) target.addEventListener(type, handler, opts); };
+        const sinceStart = () => Date.now() - pageStart;
+        const markInput = () => { if (interaction.first_input_ms === null) interaction.first_input_ms = sinceStart(); };
+
+        // Zliczamy tylko zdarzenia, bez treści: nie zapisujemy naciśniętych klawiszy ani miejsc dotknięć.
+        on(window, 'pointerdown', e => {
+            if (e.pointerType in interaction.pointer) interaction.pointer[e.pointerType]++;
+            markInput();
+        }, { passive: true, capture: true });
+        on(window, 'touchstart', e => {
+            interaction.max_touches = Math.max(interaction.max_touches, e.touches.length);
+        }, { passive: true, capture: true });
+        on(window, 'keydown', () => { interaction.keys++; markInput(); }, { capture: true });
+        on(window, 'scroll', () => {
+            interaction.scrolls++;
+            if (interaction.first_scroll_ms === null) interaction.first_scroll_ms = sinceStart();
+        }, { passive: true });
+        on(document, 'copy', () => { interaction.copies++; });
+        on(document, 'contextmenu', () => { interaction.context_menus++; });
+        on(document, 'selectionchange', () => { if (interaction.selections < 50) interaction.selections++; });
+        on(window, 'resize', () => { interaction.resizes++; });
+        on(screen.orientation, 'change', () => { interaction.orientation_changes++; });
+        on(document, 'visibilitychange', () => {
+            if (document.visibilityState === 'hidden') interaction.tab_switches++;
+        });
+        on(window, 'blur', () => { interaction.blurs++; });
+        on(window, 'offline', () => { interaction.offline_events++; });
+        on(navigator.connection, 'change', () => { interaction.net_changes++; });
+        on(window.visualViewport, 'resize', () => {
+            interaction.max_pinch_scale = Math.max(interaction.max_pinch_scale,
+                Math.round(window.visualViewport.scale * 100) / 100);
+        });
+        on(window, 'error', e => {
+            interaction.js_errors++;
+            const file = String(e.filename || '').split('/').pop();
+            interaction.last_js_error = `${e.message} @${file}:${e.lineno}`.slice(0, 160);
+        });
+        on(window, 'unhandledrejection', () => { interaction.js_errors++; });
+
+        const observe = (type, handler, extra) => {
+            try {
+                const po = new PerformanceObserver(list => list.getEntries().forEach(handler));
+                po.observe(Object.assign({ type, buffered: true }, extra));
+            } catch (e) {}
+        };
+        observe('paint', en => {
+            if (en.name === 'first-contentful-paint') vitals.fcp_ms = Math.round(en.startTime);
+        });
+        observe('largest-contentful-paint', en => { vitals.lcp_ms = Math.round(en.startTime); });
+        observe('layout-shift', en => {
+            if (!en.hadRecentInput) vitals.cls = Math.round((vitals.cls + en.value) * 1000) / 1000;
+        });
+        observe('longtask', en => { vitals.long_tasks++; vitals.long_task_ms += Math.round(en.duration); });
+        observe('event', en => {
+            vitals.max_event_ms = Math.max(vitals.max_event_ms, Math.round(en.duration));
+        }, { durationThreshold: 40 });
+    }
+
+    function snapshot() {
+        return { ...interaction, pointer: { ...interaction.pointer }, vitals: { ...vitals } };
+    }
+
+
+    // --- Zebranie wszystkiego w jedno zdarzenie ---
+
+    async function collect() {
+        // Odświeżanie mierzymy jako pierwsze, zanim reszta zajmie procesor.
+        const refresh = await probe(measureRefreshRate, 2500);
+        const [navInfo, storage, webgpu, audio, media, devices, voices, battery] = await Promise.all([
+            probe(collectNavigator),
+            probe(collectStorage, 3000),
+            probe(collectWebgpu),
+            probe(audioFingerprint),
+            probe(collectMedia, 4000),
+            probe(collectMediaDevices),
+            probe(collectVoices, 1200),
+            probe(collectBatteryTimes)
+        ]);
+        const fonts = sync(detectFonts);
+        return {
+            load: sync(collectTiming),
+            display: sync(collectDisplay),
+            refresh,
+            prefs: sync(collectPrefs),
+            nav: navInfo,
+            locale: sync(collectLocale),
+            storage,
+            returning: sync(collectReturning),
+            cpu_ms: sync(cpuBenchmark),
+            webgl: sync(collectWebgl),
+            webgl_render_hash: sync(webglRenderHash),
+            webgpu,
+            audio,
+            fonts: fonts && { count: fonts.length, hash: fnv1aHex(fonts.join('|')), list: fonts },
+            emoji: sync(emojiSupport),
+            math_hash: sync(mathFingerprint),
+            media,
+            devices,
+            voices,
+            battery,
+            features: sync(collectFeatures),
+            css: sync(collectCss)
+        };
+    }
+
+    async function send() {
+        const data = await collect();
+        // Serwer odrzuca zdarzenia powyżej 16 KB, więc w razie potrzeby ucinamy najdłuższe listy.
+        const tooBig = () => JSON.stringify(data).length > 13000;
+        if (tooBig() && data.fonts) delete data.fonts.list;
+        if (tooBig() && data.webgl && data.webgl.webgl) delete data.webgl.webgl.extensions;
+        if (tooBig() && data.voices) delete data.voices.langs;
+        sendEvent('device_extra', data);
+    }
+
+    // Po pierwszej paczce i poza ścieżką ładowania strony, a strona wyrenderowana z góry
+    // (prerender) czeka na faktyczne wejście odwiedzającego.
+    function schedule() {
+        const run = () => {
+            const later = window.requestIdleCallback
+                ? fn => requestIdleCallback(fn, { timeout: 4000 })
+                : fn => setTimeout(fn, 1500);
+            later(() => { send().catch(() => {}); });
+        };
+        if (document.prerendering) {
+            document.addEventListener('prerenderingchange', run, { once: true });
+        } else {
+            run();
+        }
+    }
+
+    return { start: startTracking, schedule, snapshot, collect };
+})();
+
+
 // --- Śledzenie tego, co odwiedzający robi na stronie (zakładki, odsłuchy, kliknięcia) ---
 
 function setupActivityTracking() {
@@ -714,7 +1490,9 @@ Promise.race([
     new Promise(resolve => setTimeout(resolve, 600))
 ]).then(() => {
     sendDeviceInfo();
+    deviceExtra.schedule();
 });
+deviceExtra.start();
 checkServer();
 setupChatLinks();
 startClock();
