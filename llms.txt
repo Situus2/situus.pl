@@ -1,9 +1,10 @@
 # Situus
 
-> Situus (https://situus.pl/) to autorska strona muzyczna z dodatkowymi małymi narzędziami webowymi. Główną częścią strony jest dyskografia oraz oś czasu powstawania utworów elektronicznych i ambientowych inspirowanych m.in. klimatem ścieżki dźwiękowej z Minecrafta i twórczością C418. Cała muzyka powstaje w 100% ręcznie, bez użycia generatorów sztucznej inteligencji (No AI). Strona jest po polsku i ma interfejs w stylistyce Liquid Glass.
+> Situus (https://situus.pl/) to autorska strona muzyczna z dodatkowymi projektami: narzędziami webowymi oraz technicznymi tekstami i artykułami. Główną częścią strony jest dyskografia oraz oś czasu powstawania utworów elektronicznych i ambientowych inspirowanych m.in. klimatem ścieżki dźwiękowej z Minecrafta i twórczością C418. Cała muzyka powstaje w 100% ręcznie, bez użycia generatorów sztucznej inteligencji (No AI). Strona jest po polsku i ma interfejs w stylistyce Liquid Glass.
 
 - Strona główna: https://situus.pl/
 - Sekcja muzyczna: https://situus.pl/#muzyka
+- Sekcja projektów (narzędzia oraz teksty i artykuły): https://situus.pl/#projekty
 - Kontakt: situus2@gmail.com
 
 ## Muzyka (główny profil działalności)
@@ -47,12 +48,16 @@ Gdzie słuchać wydanych utworów:
 - **Brzmienie i opis:** Głęboko klimatyczna kompozycja przenosząca słuchacza pod powierzchnię wody – do wnętrza podwodnej bazy zamkniętej w kopułach. Oddaje wyciszony nastrój głębin i kojące poczucie spokoju, wyróżniając się znacznie bogatszą przestrzenią, głębią oraz dojrzalszym brzmieniem na tle wcześniejszych publikacji.
 - **Historia powstania:** Impulsem była podwodna baza w kopułach zbudowana ze znajomymi na wspólnym serwerze Minecrafta (widoczna również na tapecie strony situus.pl). Pierwsze szkice powstały późną nocą pod wpływem chwili, a projekt przeszedł od tego czasu wiele wersji, zmian wtyczek i przebudowę brzmień. Jako jeden z pierwszych utworów stworzonych w 100% w FL Studio stanowi mocny przeskok jakościowy.
 
-## Dodatkowe projekty: Narzędzia webowe (`https://situus.pl/#narzedzia`)
+## Projekty: Narzędzia oraz teksty i artykuły (`https://situus.pl/#projekty`)
 
-Oprócz muzyki na stronie znajdują się odnośniki do dwóch autorskich narzędzi webowych działających na osobnych subdomenach `situus.pl`:
+W zakładce **Projekty** zebrane są zarówno autorskie narzędzia webowe, jak i dłuższe teksty oraz artykuły techniczne:
 
-- **[Messenger Wrapped](https://wrapped.situus.pl/)** (`https://situus.pl/#narzedzia/wrapped`): darmowe narzędzie pokazujące statystyki rozmów z Messengera (np. kto pisał najwięcej w minionym roku). Użytkownik pobiera eksport danych z Facebooka w formacie JSON i wgrywa go na stronie – cała analiza odbywa się lokalnie w przeglądarce, a plik nie jest nigdzie wysyłany i nie opuszcza urządzenia.
-- **[Situus Chat](https://chat.situus.pl/)** (`https://situus.pl/#narzedzia/chat`): eksperymentalny, prywatny czat oparty na modelu językowym (LLM). Nie jest publicznie otwarty – działa wyłącznie na zaufanych urządzeniach i dla osób, które otrzymały zaproszenie od autora (można poprosić o dostęp mailowo). Strona główna wyświetla na żywo status serwera czatu.
+### Narzędzia webowe
+- **[Messenger Wrapped](https://wrapped.situus.pl/)** (`https://situus.pl/#projekty/wrapped`): darmowe narzędzie pokazujące statystyki rozmów z Messengera (np. kto pisał najwięcej w minionym roku). Użytkownik pobiera eksport danych z Facebooka w formacie JSON i wgrywa go na stronie – cała analiza odbywa się lokalnie w przeglądarce, a plik nie jest nigdzie wysyłany i nie opuszcza urządzenia.
+- **[Situus Chat](https://chat.situus.pl/)** (`https://situus.pl/#projekty/chat`): eksperymentalny, prywatny czat oparty na modelu językowym (LLM). Nie jest publicznie otwarty – działa wyłącznie na zaufanych urządzeniach i dla osób, które otrzymały zaproszenie od autora (można poprosić o dostęp mailowo). Strona główna wyświetla na żywo status serwera czatu.
+
+### Teksty i artykuły
+- **STARK-WEB 12B: model do generowania stron i gier, wytrenowany na domowej karcie graficznej** (`https://situus.pl/#projekty/stark-web-12b` oraz praca badawcza `https://situus.pl/praca_naukowa_2.html`): opis budowy i dostrajania modelu Gemma 4 12B (LoRA, QAT, 43k kontekstu na 16 GB VRAM RTX 5060 Ti) na autorskim zbiorze 806 przykładów (12,29 mln tokenów) z 9-krokowym planowaniem przed generowaniem kodu HTML/CSS/JS.
 
 ## Kontakt (`https://situus.pl/#kontakt`)
 

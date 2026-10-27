@@ -424,51 +424,48 @@
             transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
         }
 
-        /* Kolor kafelka leży na szkle jako cienka warstwa, więc przez nią widać załamaną tapetę */
-        .app-icon::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            background: var(--wash, none);
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Delikatne światło od góry, bez mlecznego welonu */
-        .app-icon::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 42%);
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .app-icon svg {
+        /* Symbol z matowego szkła: kształt ikony wycina z kafelka rozmyte, rozjaśnione tło, a po obrysie biegnie jasna krawędź */
+        .glyph {
             position: relative;
             z-index: 2;
+            display: block;
             width: 36px;
             height: 36px;
-            overflow: visible;
-            filter: drop-shadow(0 2px 4px rgba(10, 12, 50, 0.4));
+            flex-shrink: 0;
             transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        .app:hover .app-icon svg, .tool-card .glass-c:hover .app-icon svg { transform: translateY(-2px) scale(1.07); }
-
-        .app-icon--wrapped {
-            --wash:
-                radial-gradient(85% 70% at 15% 8%, rgba(255, 150, 225, 0.5), transparent 65%),
-                linear-gradient(155deg, rgba(124, 104, 255, 0.72), rgba(52, 38, 170, 0.8));
+        .glyph::before, .glyph::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+            -webkit-mask-size: contain;
+            mask-size: contain;
         }
 
-        .app-icon--chat {
-            --wash:
-                radial-gradient(85% 70% at 85% 8%, rgba(130, 225, 255, 0.45), transparent 65%),
-                linear-gradient(155deg, rgba(74, 142, 255, 0.74), rgba(26, 50, 150, 0.82));
+        .glyph::before {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.1) 55%, rgba(255, 255, 255, 0.32));
+            -webkit-backdrop-filter: blur(3px) saturate(120%) brightness(1.2);
+            backdrop-filter: blur(3px) saturate(120%) brightness(1.2);
+            -webkit-mask-image: var(--shape);
+            mask-image: var(--shape);
         }
+
+        .glyph::after {
+            background: linear-gradient(140deg, #fff 0%, rgba(255, 255, 255, 0.4) 50%, #fff 100%);
+            -webkit-mask-image: var(--rim);
+            mask-image: var(--rim);
+        }
+
+        .glyph--wrapped { --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg transform='translate(0 -1)' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11.2 42A24 24 0 1 1 25.8 53.2L12 58Z' stroke-width='4.6' opacity='1'/%3E%3Cpath d='M32 15A15 15 0 1 1 17 30' stroke-width='4.6' opacity='0.85'/%3E%3Cpath d='M32 23.5A6.5 6.5 0 0 1 32 36.5' stroke-width='4.6' opacity='0.7'/%3E%3C/g%3E%3C/svg%3E"); --rim: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3Cmask id='n' maskUnits='userSpaceOnUse' x='0' y='0' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23fff'/%3E%3Cg transform='translate(0 -1)' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11.2 42A24 24 0 1 1 25.8 53.2L12 58Z' stroke-width='2.0'/%3E%3Cpath d='M32 15A15 15 0 1 1 17 30' stroke-width='2.0'/%3E%3Cpath d='M32 23.5A6.5 6.5 0 0 1 32 36.5' stroke-width='2.0'/%3E%3C/g%3E%3C/mask%3E%3C/defs%3E%3Cg transform='translate(0 -1)' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' mask='url(%23n)'%3E%3Cpath d='M11.2 42A24 24 0 1 1 25.8 53.2L12 58Z' stroke-width='4.6'/%3E%3Cpath d='M32 15A15 15 0 1 1 17 30' stroke-width='4.6'/%3E%3Cpath d='M32 23.5A6.5 6.5 0 0 1 32 36.5' stroke-width='4.6'/%3E%3C/g%3E%3C/svg%3E"); }
+        .glyph--chat { --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3Cmask id='g' maskUnits='userSpaceOnUse' x='0' y='0' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23fff'/%3E%3Cpath d='M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z' transform='scale(2)' fill='%23000' stroke='%23000' stroke-width='2.6' stroke-linejoin='round'/%3E%3C/mask%3E%3C/defs%3E%3Crect x='17' y='8' width='40' height='32' rx='9.5' fill='%23000' fill-opacity='0.5' mask='url(%23g)'/%3E%3Cpath transform='scale(2)' fill='%23000' fill-rule='evenodd' d='M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z M8.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z M12.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z M16.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z'/%3E%3C/svg%3E"); --rim: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3Cmask id='g' maskUnits='userSpaceOnUse' x='0' y='0' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23fff'/%3E%3Cpath d='M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z' transform='scale(2)' fill='%23000' stroke='%23000' stroke-width='2.6' stroke-linejoin='round'/%3E%3C/mask%3E%3Cmask id='b' maskUnits='userSpaceOnUse' x='0' y='0' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23000'/%3E%3Crect x='17' y='8' width='40' height='32' rx='9.5' fill='%23fff'/%3E%3Cpath d='M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z' transform='scale(2)' fill='%23000' stroke='%23000' stroke-width='2.6' stroke-linejoin='round'/%3E%3C/mask%3E%3Cmask id='f' maskUnits='userSpaceOnUse' x='0' y='0' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23000'/%3E%3Cpath transform='scale(2)' fill='%23fff' fill-rule='evenodd' d='M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z M8.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z M12.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z M16.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z'/%3E%3C/mask%3E%3C/defs%3E%3Crect x='17' y='8' width='40' height='32' rx='9.5' fill='none' stroke='%23000' stroke-opacity='0.7' stroke-width='3.2' mask='url(%23b)'/%3E%3Cpath transform='scale(2)' fill='none' stroke='%23000' stroke-width='2.0' fill-rule='evenodd' d='M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z M8.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z M12.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z M16.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z' mask='url(%23f)'/%3E%3C/svg%3E"); }
+        .glyph--lock { --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M11 14.5V11a5 5 0 0 1 10 0v3.5' fill='none' stroke='%23000' stroke-width='2.8' stroke-linecap='round'/%3E%3Cpath fill='%23000' fill-rule='evenodd' d='M11.5 13.5h9a4.5 4.5 0 0 1 4.5 4.5v4.5a4.5 4.5 0 0 1-4.5 4.5h-9A4.5 4.5 0 0 1 7 22.5V18a4.5 4.5 0 0 1 4.5-4.5Z M16 17.2a1.9 1.9 0 0 1 .9 3.6v2.1a.9.9 0 0 1-1.8 0v-2.1a1.9 1.9 0 0 1 .9-3.6Z'/%3E%3C/svg%3E"); --rim: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3Cmask id='n' maskUnits='userSpaceOnUse' x='0' y='0' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23fff'/%3E%3Cpath d='M11 14.5V11a5 5 0 0 1 10 0v3.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3C/mask%3E%3Cmask id='f' maskUnits='userSpaceOnUse' x='0' y='0' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Cpath fill='%23fff' fill-rule='evenodd' d='M11.5 13.5h9a4.5 4.5 0 0 1 4.5 4.5v4.5a4.5 4.5 0 0 1-4.5 4.5h-9A4.5 4.5 0 0 1 7 22.5V18a4.5 4.5 0 0 1 4.5-4.5Z M16 17.2a1.9 1.9 0 0 1 .9 3.6v2.1a.9.9 0 0 1-1.8 0v-2.1a1.9 1.9 0 0 1 .9-3.6Z'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M11 14.5V11a5 5 0 0 1 10 0v3.5' fill='none' stroke='%23000' stroke-width='2.8' stroke-linecap='round' mask='url(%23n)'/%3E%3Cpath d='M11.5 13.5h9a4.5 4.5 0 0 1 4.5 4.5v4.5a4.5 4.5 0 0 1-4.5 4.5h-9A4.5 4.5 0 0 1 7 22.5V18a4.5 4.5 0 0 1 4.5-4.5Z M16 17.2a1.9 1.9 0 0 1 .9 3.6v2.1a.9.9 0 0 1-1.8 0v-2.1a1.9 1.9 0 0 1 .9-3.6Z' fill='none' stroke='%23000' stroke-width='1.9' fill-rule='evenodd' mask='url(%23f)'/%3E%3C/svg%3E"); }
+
+        .app:hover .app-icon .glyph, .tool-card .glass-c:hover .app-icon .glyph { transform: translateY(-2px) scale(1.07); }
 
         /* --- Muzyka --- */
 
@@ -1072,7 +1069,7 @@
 
         .app-head { display: flex; align-items: center; gap: 24px; margin-bottom: 24px; }
         .app-head .app-icon { width: 112px; height: 112px; border-radius: 28px; }
-        .app-head .app-icon svg { width: 72px; height: 72px; }
+        .app-head .app-icon .glyph { width: 72px; height: 72px; }
         .app-head .actions { margin-top: 16px; }
         .domain { font-size: 14px; color: var(--ink-3); }
 
@@ -1176,19 +1173,21 @@
             color: var(--ink-2);
         }
         .w-project .glass-c:hover .w-project-more { color: var(--ink); }
-        /* Dwa zrzuty w swoich proporcjach, bez przycinania */
-        .w-project-thumbs {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-            align-items: start;
-        }
+        /* Dwa zrzuty w swoich proporcjach: tylny (Gemini) wychyla się zza przedniego (STARK-WEB), oba lekko przechylone */
+        .w-project-thumbs { position: relative; aspect-ratio: 1 / 0.88; }
+        .w-project .w-project-thumbs { width: min(100%, 210px); justify-self: end; }
         .w-project-thumb {
+            position: absolute;
+            width: 55%;
             border-radius: 12px;
             overflow: hidden;
             background: #05070e;
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 12px 24px -14px rgba(0, 0, 0, 0.75);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 18px 30px -14px rgba(0, 0, 0, 0.8);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
+        .w-project-thumb:first-child { left: 1%; top: 7%; z-index: 1; transform: rotate(-7deg); }
+        .w-project-thumb:first-child img { filter: brightness(0.8); }
+        .w-project-thumb:last-child { right: 1%; top: 0; z-index: 2; transform: rotate(5deg); }
         .w-project-thumb img {
             display: block;
             width: 100%;
@@ -1196,11 +1195,21 @@
             aspect-ratio: 561 / 812;
             object-fit: cover;
             object-position: top center;
-            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .w-project .glass-c:hover .w-project-thumb img { transform: scale(1.03); }
+        .glass-c:hover .w-project-thumb:first-child { transform: translateX(-3%) rotate(-9deg); }
+        .glass-c:hover .w-project-thumb:last-child { transform: translateX(3%) rotate(6deg); }
 
-        /* Karta artykułu w zakładce #projekty */
+        /* Karta artykułu i nagłówki sekcji w zakładce #projekty */
+        .sec-label {
+            margin: 0 0 12px 2px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.055em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+        }
+        .apps-grid + .sec-label,
+        .projects-list + .sec-label { margin-top: 32px; }
         .projects-list { display: grid; gap: 16px; }
         .project-card .glass-c { display: block; padding: 24px; }
         .project-card-grid {
@@ -1219,7 +1228,6 @@
             text-wrap: balance;
         }
         .project-lead { margin-top: 10px; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
-        .project-card .story-facts { margin-top: 16px; }
         .project-cta {
             display: inline-flex;
             align-items: center;
@@ -1230,7 +1238,6 @@
             color: var(--ink-2);
         }
         .project-card .glass-c:hover .project-cta { color: var(--ink); }
-        .project-card .glass-c:hover .w-project-thumb img { transform: scale(1.03); }
 
         /* Widok artykułu (#projekty/stark-web-12b) */
         .page--article {
@@ -1524,7 +1531,7 @@
             .apps-grid { grid-template-columns: minmax(0, 1fr); }
             .tool-card .glass-c { min-height: 0; }
             .w-project-body, .project-card-grid { grid-template-columns: minmax(0, 1fr); }
-            .w-project-thumbs { max-width: 260px; }
+            .w-project-thumbs { order: -1; width: min(100%, 300px); margin: 0 auto 6px; }
             .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 18px; }
             .stat:nth-child(3) { border-left: 0; padding-left: 0; }
         }
@@ -1549,7 +1556,7 @@
             .history { margin-top: 36px; }
             .app-head { flex-direction: column; align-items: flex-start; gap: 16px; }
             .app-head .app-icon { width: 88px; height: 88px; border-radius: 22px; }
-            .app-head .app-icon svg { width: 56px; height: 56px; }
+            .app-head .app-icon .glyph { width: 56px; height: 56px; }
             .seg a { padding: 0 12px; }
 
             .page--article .text-card .glass-c { padding: 20px 18px 22px; }
@@ -1559,14 +1566,10 @@
             .cot-toggle { flex-direction: column; align-items: flex-start; gap: 10px; }
         }
 
-        /* Pięć kart w pasku: na wąskich telefonach (360 px i mniej) trzeba je ścieśnić */
-        @media (max-width: 400px) {
+        /* Cztery karty w pasku: na bardzo wąskich telefonach lekko je ścieśniamy */
+        @media (max-width: 380px) {
             .tabs { padding: 4px; }
-            .tab { padding: 0 8px; font-size: 13.5px; }
-        }
-
-        @media (max-width: 340px) {
-            .tab { padding: 0 5px; font-size: 13px; }
+            .tab { padding: 0 10px; font-size: 13.5px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1599,7 +1602,6 @@
                 <a class="tab" href="#start" data-tab="start">Situus</a>
                 <a class="tab" href="#muzyka" data-tab="muzyka">Muzyka</a>
                 <a class="tab" href="#projekty" data-tab="projekty">Projekty</a>
-                <a class="tab" href="#narzedzia" data-tab="narzedzia">Narzędzia</a>
                 <a class="tab" href="#kontakt" data-tab="kontakt">Kontakt</a>
             </div>
         </nav>
@@ -1636,36 +1638,10 @@
                 <stop offset="0%" stop-color="#3b4fd8" stop-opacity="0.78"/>
                 <stop offset="100%" stop-color="#1d3578" stop-opacity="0.62"/>
             </linearGradient>
-            <!-- Ikony narzędzi: jednolite kształty, jasny fiolet-biel jak światło na kolorowym szkle -->
-            <linearGradient id="gl-ink" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="100%" stop-color="#e0dcff"/>
-            </linearGradient>
-            <mask id="gl-mask-chat" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
-                <rect width="64" height="64" fill="#fff"/>
-                <path d="M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z" transform="scale(2)" fill="#000" stroke="#000" stroke-width="2.6" stroke-linejoin="round"/>
-            </mask>
         </defs>
         <symbol id="i-chev" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
         <symbol id="i-back" viewBox="0 0 16 16"><path d="M10 3.5L5.5 8 10 12.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
         <symbol id="i-out" viewBox="0 0 16 16"><path d="M5 11l6-6M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
-        <!-- Wrapped: dymek z pierścieni statystyk -->
-        <symbol id="i-wrapped" viewBox="0 0 64 64">
-            <g transform="translate(0 -1)" fill="none" stroke="url(#gl-ink)" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11.2 42A24 24 0 1 1 25.8 53.2L12 58Z" stroke-width="4.6"/>
-                <path d="M32 15A15 15 0 1 1 17 30" stroke-width="4.6" opacity="0.85"/>
-                <path d="M32 23.5A6.5 6.5 0 0 1 32 36.5" stroke-width="4.6" opacity="0.7"/>
-            </g>
-        </symbol>
-        <!-- Chat: dwa dymki, w przednim kropki wycięte w kształcie -->
-        <symbol id="i-chat" viewBox="0 0 64 64">
-            <rect x="17" y="8" width="40" height="32" rx="9.5" fill="#fff" fill-opacity="0.5" mask="url(#gl-mask-chat)"/>
-            <path transform="scale(2)" fill="url(#gl-ink)" fill-rule="evenodd" d="M9 9.2h10.8a4.6 4.6 0 0 1 4.6 4.6v7.2a4.6 4.6 0 0 1-4.6 4.6h-6.3l-4 3.4c-.63.53-1.6.08-1.6-.74v-2.66A4.58 4.58 0 0 1 4.4 21v-7.2A4.6 4.6 0 0 1 9 9.2Z M8.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z M12.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z M16.8 17.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0-3.2 0Z"/>
-        </symbol>
-        <symbol id="i-chat-lock" viewBox="0 0 32 32">
-            <path d="M11 14.5V11a5 5 0 0 1 10 0v3.5" fill="none" stroke="url(#gl-ink)" stroke-width="2.8" stroke-linecap="round"/>
-            <path fill="url(#gl-ink)" fill-rule="evenodd" d="M11.5 13.5h9a4.5 4.5 0 0 1 4.5 4.5v4.5a4.5 4.5 0 0 1-4.5 4.5h-9A4.5 4.5 0 0 1 7 22.5V18a4.5 4.5 0 0 1 4.5-4.5Z M16 17.2a1.9 1.9 0 0 1 .9 3.6v2.1a.9.9 0 0 1-1.8 0v-2.1a1.9 1.9 0 0 1 .9-3.6Z"/>
-        </symbol>
         <symbol id="i-lock" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="7" width="9" height="6.5" rx="1.6"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7"/></g></symbol>
         <symbol id="i-mail" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="2.5" y="4.5" width="15" height="11" rx="2.5"/><path d="M3.5 6l6.5 5 6.5-5"/></g></symbol>
         <!-- Przekreślona iskra – iskrą zwykle oznacza się AI -->
@@ -1706,12 +1682,12 @@
                         <div class="glass-c">
                             <h2 class="label">Narzędzia</h2>
                             <div class="app-row">
-                                <a class="app" href="#narzedzia/wrapped">
-                                    <span class="app-icon app-icon--wrapped" aria-hidden="true"><svg><use href="#i-wrapped"/></svg></span>
+                                <a class="app" href="#projekty/wrapped">
+                                    <span class="app-icon app-icon--wrapped" aria-hidden="true"><span class="glyph glyph--wrapped"></span></span>
                                     Wrapped
                                 </a>
-                                <a class="app" href="#narzedzia/chat">
-                                    <span class="app-icon app-icon--chat" aria-hidden="true"><svg><use href="#i-chat"/></svg></span>
+                                <a class="app" href="#projekty/chat">
+                                    <span class="app-icon app-icon--chat" aria-hidden="true"><span class="glyph glyph--chat"></span></span>
                                     Chat
                                 </a>
                             </div>
@@ -2103,22 +2079,40 @@
         <section class="view" id="projekty" data-view="projekty" data-title="Projekty – Situus" aria-labelledby="t-projekty">
             <div class="page">
                 <h2 class="page-title" id="t-projekty" tabindex="-1">Projekty</h2>
-                <p class="page-lead">Dłuższe teksty o&nbsp;rzeczach, które buduję.</p>
+                <p class="page-lead">Narzędzia działające w&nbsp;przeglądarce oraz dłuższe teksty o&nbsp;rzeczach, które buduję.</p>
 
+                <h3 class="sec-label">Narzędzia</h3>
+                <div class="apps-grid">
+                    <div class="glass tool-card">
+                        <a class="glass-c" href="#projekty/wrapped">
+                            <span class="app-icon app-icon--wrapped" aria-hidden="true"><span class="glyph glyph--wrapped"></span></span>
+                            <h3>Messenger Wrapped</h3>
+                            <p>Statystyki twoich rozmów z&nbsp;Messengera, liczone w&nbsp;przeglądarce.</p>
+                            <span class="more"><span>wrapped.situus.pl</span><span>Szczegóły <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></span></span>
+                        </a>
+                    </div>
+                    <div class="glass tool-card">
+                        <a class="glass-c" href="#projekty/chat">
+                            <span class="app-icon app-icon--chat" aria-hidden="true"><span class="glyph glyph--chat"></span></span>
+                            <h3>Situus Chat</h3>
+                            <p>Eksperymentalny czat na&nbsp;modelu językowym. Na&nbsp;zaproszenie.</p>
+                            <span class="more">
+                                <span class="meta-status" data-server-box hidden><span class="dot" aria-hidden="true"></span>serwer <span data-server-status data-online="działa" data-offline="nie odpowiada">…</span></span>
+                                <span>Szczegóły <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+
+                <h3 class="sec-label">Teksty i&nbsp;artykuły</h3>
                 <div class="projects-list">
                     <div class="glass project-card">
                         <a class="glass-c" href="#projekty/stark-web-12b">
                             <div class="project-card-grid">
                                 <div>
-                                    <p class="story-meta"><time datetime="2026-06">Czerwiec 2026</time><span>Artykuł</span></p>
+                                    <p class="story-meta"><time datetime="2026-06">Czerwiec 2026</time></p>
                                     <h3>STARK-WEB 12B: model do&nbsp;generowania stron i&nbsp;gier, wytrenowany na&nbsp;domowej karcie graficznej</h3>
                                     <p class="project-lead">Jak powstał model, który z&nbsp;jednego zdania pisze stronę lub grę w&nbsp;jednym pliku HTML: zbiór danych, trening LoRA na&nbsp;16&nbsp;GB VRAM i&nbsp;błędy po&nbsp;drodze.</p>
-
-                                    <ul class="story-facts">
-                                        <li>Gemma 4 12B + LoRA</li>
-                                        <li>806 przykładów, 12,3&nbsp;mln&nbsp;tokenów</li>
-                                        <li>RTX 5060 Ti 16&nbsp;GB</li>
-                                    </ul>
 
                                     <span class="project-cta">Czytaj artykuł <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></span>
                                 </div>
@@ -2336,42 +2330,13 @@
             </div>
         </section>
 
-        <!-- ============ Narzędzia ============ -->
-        <section class="view" id="narzedzia" data-view="narzedzia" data-title="Narzędzia – Situus" aria-labelledby="t-narzedzia">
+        <!-- ============ Narzędzia (szczegóły w Projektach) ============ -->
+        <section class="view" data-view="projekty/wrapped" data-title="Messenger Wrapped – Projekty – Situus" aria-labelledby="t-wrapped">
             <div class="page">
-                <h2 class="page-title" id="t-narzedzia" tabindex="-1">Narzędzia</h2>
-                <p class="page-lead">Działają w&nbsp;przeglądarce, każde pod własnym adresem w&nbsp;situus.pl.</p>
-
-                <div class="apps-grid">
-                    <div class="glass tool-card">
-                        <a class="glass-c" href="#narzedzia/wrapped">
-                            <span class="app-icon app-icon--wrapped" aria-hidden="true"><svg><use href="#i-wrapped"/></svg></span>
-                            <h3>Messenger Wrapped</h3>
-                            <p>Statystyki twoich rozmów z&nbsp;Messengera, liczone w&nbsp;przeglądarce.</p>
-                            <span class="more"><span>wrapped.situus.pl</span><span>Szczegóły <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></span></span>
-                        </a>
-                    </div>
-                    <div class="glass tool-card">
-                        <a class="glass-c" href="#narzedzia/chat">
-                            <span class="app-icon app-icon--chat" aria-hidden="true"><svg><use href="#i-chat"/></svg></span>
-                            <h3>Situus Chat</h3>
-                            <p>Eksperymentalny czat na&nbsp;modelu językowym. Na&nbsp;zaproszenie.</p>
-                            <span class="more">
-                                <span class="meta-status" data-server-box hidden><span class="dot" aria-hidden="true"></span>serwer <span data-server-status data-online="działa" data-offline="nie odpowiada">…</span></span>
-                                <span>Szczegóły <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></span>
-                            </span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="view" data-view="narzedzia/wrapped" data-title="Messenger Wrapped – Situus" aria-labelledby="t-wrapped">
-            <div class="page">
-                <div class="glass pill back"><a class="glass-c" href="#narzedzia"><svg aria-hidden="true"><use href="#i-back"/></svg>Narzędzia</a></div>
+                <div class="glass pill back"><a class="glass-c" href="#projekty"><svg aria-hidden="true"><use href="#i-back"/></svg>Projekty</a></div>
 
                 <div class="app-head">
-                    <span class="glass app-icon app-icon--wrapped" aria-hidden="true"><svg><use href="#i-wrapped"/></svg></span>
+                    <span class="glass app-icon app-icon--wrapped" aria-hidden="true"><span class="glyph glyph--wrapped"></span></span>
                     <div>
                         <h2 class="detail-title" id="t-wrapped" tabindex="-1">Messenger Wrapped</h2>
                         <p class="detail-sub">Statystyki rozmów z&nbsp;Messengera</p>
@@ -2396,12 +2361,12 @@
             </div>
         </section>
 
-        <section class="view" data-view="narzedzia/chat" data-title="Situus Chat – Situus" aria-labelledby="t-chat">
+        <section class="view" data-view="projekty/chat" data-title="Situus Chat – Projekty – Situus" aria-labelledby="t-chat">
             <div class="page">
-                <div class="glass pill back"><a class="glass-c" href="#narzedzia"><svg aria-hidden="true"><use href="#i-back"/></svg>Narzędzia</a></div>
+                <div class="glass pill back"><a class="glass-c" href="#projekty"><svg aria-hidden="true"><use href="#i-back"/></svg>Projekty</a></div>
 
                 <div class="app-head">
-                    <span class="glass app-icon app-icon--chat" aria-hidden="true"><svg><use href="#i-chat"/></svg></span>
+                    <span class="glass app-icon app-icon--chat" aria-hidden="true"><span class="glyph glyph--chat"></span></span>
                     <div>
                         <h2 class="detail-title" id="t-chat" tabindex="-1">Situus Chat</h2>
                         <p class="detail-sub">Eksperymentalny czat na&nbsp;modelu językowym</p>
@@ -2457,7 +2422,7 @@
 
     <dialog id="chat-dialog" class="dialog" aria-labelledby="chat-dialog-title">
         <div class="dialog-body">
-            <span class="app-icon app-icon--chat" aria-hidden="true"><svg><use href="#i-chat-lock"/></svg></span>
+            <span class="app-icon app-icon--chat" aria-hidden="true"><span class="glyph glyph--lock"></span></span>
             <h2 id="chat-dialog-title">Ten czat jest prywatny</h2>
             <p>Situus Chat działa tylko na&nbsp;zaufanych urządzeniach, a&nbsp;tego nie ma na&nbsp;liście.</p>
             <p class="quote">Kim jesteś? Jeśli cię znam i&nbsp;lubię, może dam ci dostęp. Zapytaj.</p>
@@ -2490,7 +2455,7 @@
             const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
             const lowTransparency = matchMedia('(prefers-reduced-transparency: reduce)').matches;
             // Kolejność musi zgadzać się z kartami w pasku
-            const ORDER = ['start', 'muzyka', 'projekty', 'narzedzia', 'kontakt'];
+            const ORDER = ['start', 'muzyka', 'projekty', 'kontakt'];
             const sceneImg = document.querySelector('.scene img');
             let glassText = null;
 
@@ -2634,7 +2599,7 @@
             bar.addEventListener('pointercancel', release);
 
 
-            // --- Widoki: #start, #muzyka, #muzyka/unsolved, #narzedzia/wrapped… ---
+            // --- Widoki: #start, #muzyka, #muzyka/unsolved, #projekty/wrapped… ---
             // Zmiana zakładki: stara strona gaśnie, a elementy nowej wjeżdżają kolejno od dołu.
             // Wejście w szczegóły wsuwa stronę z prawej, powrót z lewej.
 
@@ -2643,7 +2608,8 @@
             let leaveTimer = 0;
 
             function routeOf(hash) {
-                const r = decodeURIComponent(hash.replace(/^#\/?/, '')) || 'start';
+                const raw = decodeURIComponent(hash.replace(/^#\/?/, '')) || 'start';
+                const r = raw.replace(/^narzedzia(?=\/|$)/, 'projekty');
                 return views.has(r) ? r : 'start';
             }
 
@@ -2651,7 +2617,7 @@
             function cascade(view) {
                 const items = [];
                 view.querySelectorAll('.home-kicker, .mark, .home-widgets > *, .page > *').forEach(el => {
-                    if (el.classList.contains('apps-grid')) items.push(...el.children);
+                    if (el.classList.contains('apps-grid') || el.classList.contains('projects-list')) items.push(...el.children);
                     else if (el.classList.contains('history')) items.push(el.querySelector('.scrub'), el.querySelector('.story'), ...el.querySelectorAll('.tl-item'));
                     else items.push(el);
                 });
@@ -3062,7 +3028,7 @@
                     liquidGL({ ...base, target: '.nav, .seg, .back, .human, .tl-tag, .scrub-track, .preview-scrub', bevelWidth: 0.5, frost: 0.3, refraction: 1.4, magnify: 1.04 });
 
                     // Ikony narzędzi (start, lista, szczegóły): wypukłe kostki płynnego szkła
-                    liquidGL({ ...base, target: '.w-apps .app-icon, .tool-card .app-icon, .app-head .app-icon', shadow: false, bevelWidth: 0.36, frost: 0.22, refraction: 1.45, bevelDepth: 1.15, aberration: 0.08, magnify: 1.08 });
+                    liquidGL({ ...base, target: '.w-apps .app-icon, .tool-card .app-icon, .app-head .app-icon', shadow: false, bevelWidth: 0.36, frost: 0.3, refraction: 1.5, bevelDepth: 1.2, aberration: 0.1, magnify: 1.1 });
 
                     // Koraliki na osi czasu: małe kulki szkła, mocno powiększają to, co pod nimi
                     liquidGL({ ...base, target: '.bead', bevelWidth: 0.5, frost: 0, refraction: 1.7, bevelDepth: 1.2, aberration: 0.1, magnify: 1.25 });
