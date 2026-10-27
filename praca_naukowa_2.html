@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optymalizacja modelu Gemma 4 12B (STARK-WEB 12B) — Situus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/latin-modern-roman@1.0.0/style.min.css">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ebebea;
+            color: #111111;
+            font-family: 'LM Roman 10', 'Latin Modern Roman', 'Computer Modern Serif', 'Crimson Pro', Georgia, 'Times New Roman', serif;
+            font-size: 11.5pt;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Pasek narzędzi (widoczny wyłącznie na ekranie) */
+        .utility-bar {
+            max-width: 210mm;
+            margin: 18px auto 0;
+            padding: 0 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 13px;
+            color: #444;
+        }
+
+        .utility-bar a {
+            color: #222;
+            text-decoration: none;
+            border-bottom: 1px solid #888;
+            padding-bottom: 1px;
+        }
+
+        .utility-bar a:hover {
+            color: #000;
+            border-bottom-color: #000;
+        }
+
+        .btn-print {
+            appearance: none;
+            background: #ffffff;
+            color: #111111;
+            border: 1px solid #bbb;
+            padding: 5px 12px;
+            font-family: inherit;
+            font-size: 12.5px;
+            cursor: pointer;
+        }
+
+        .btn-print:hover {
+            background: #f5f5f5;
+            border-color: #888;
+        }
+
+        /* Arkusz pracy naukowej (proporcje A4) */
+        .paper {
+            max-width: 210mm;
+            margin: 14px auto 48px;
+            padding: 24mm 25mm 28mm;
+            background-color: #ffffff;
+            border: 1px solid #d4d4d0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Nagłówek tytułowy w stylu LaTeX \maketitle */
+        .paper-header {
+            text-align: center;
+            margin-bottom: 2.2rem;
+        }
+
+        .paper-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #000000;
+            margin: 0 0 1.2rem;
+        }
+
+        .paper-author {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #000000;
+            margin: 0 0 0.2rem;
+        }
+
+        .paper-affiliation {
+            font-size: 0.96rem;
+            font-style: italic;
+            color: #222222;
+            margin: 0 0 0.45rem;
+        }
+
+        .paper-date {
+            font-size: 0.95rem;
+            color: #222222;
+            margin: 0;
+        }
+
+        /* Streszczenie w stylu LaTeX \begin{abstract} */
+        .abstract {
+            margin: 0 2.8rem 2.2rem;
+            font-size: 0.94rem;
+            line-height: 1.52;
+        }
+
+        .abstract-heading {
+            text-align: center;
+            font-size: 0.96rem;
+            font-weight: 700;
+            margin: 0 0 0.55rem;
+        }
+
+        .abstract p {
+            margin: 0 0 0.65rem;
+            text-align: justify;
+            hyphens: auto;
+            -webkit-hyphens: auto;
+        }
+
+        .abstract-keywords {
+            margin-top: 0.5rem;
+            text-align: justify;
+        }
+
+        /* Sekcje i podsekcje */
+        h2 {
+            font-size: 1.22rem;
+            font-weight: 700;
+            color: #000000;
+            margin: 1.9rem 0 0.65rem;
+            line-height: 1.3;
+        }
+
+        h3 {
+            font-size: 1.04rem;
+            font-weight: 700;
+            color: #000000;
+            margin: 1.3rem 0 0.45rem;
+            line-height: 1.35;
+        }
+
+        p {
+            margin: 0 0 0.75rem;
+            text-align: justify;
+            hyphens: auto;
+            -webkit-hyphens: auto;
+        }
+
+        ul, ol {
+            margin: 0.4rem 0 0.9rem;
+            padding-left: 1.6rem;
+        }
+
+        li {
+            margin-bottom: 0.35rem;
+            text-align: justify;
+            hyphens: auto;
+            -webkit-hyphens: auto;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.86em;
+        }
+
+        /* Listing algorytmiczny w stylu LaTeX lstlisting / algorithm */
+        .listing {
+            margin: 1.25rem 0;
+        }
+
+        .listing-caption {
+            font-size: 0.92rem;
+            margin: 0 0 0.35rem;
+            text-align: left;
+        }
+
+        .listing pre {
+            margin: 0;
+            padding: 0.65rem 0.5rem;
+            border-top: 1.5px solid #000000;
+            border-bottom: 1.5px solid #000000;
+            background-color: #fafafa;
+            font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            color: #000000;
+        }
+
+        .listing pre code {
+            font-size: inherit;
+        }
+
+        /* Wzory matematyczne */
+        .equation {
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        /* Tabele w stylu pakietu LaTeX booktabs */
+        .table-float {
+            margin: 1.4rem 0;
+        }
+
+        .table-caption {
+            font-size: 0.92rem;
+            margin: 0 0 0.45rem;
+            text-align: justify;
+        }
+
+        .booktabs {
+            width: 100%;
+            border-collapse: collapse;
+            border-top: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            font-size: 0.93rem;
+        }
+
+        .booktabs thead th {
+            border-bottom: 1px solid #000000;
+            padding: 0.45rem 0.6rem;
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .booktabs tbody td {
+            padding: 0.4rem 0.6rem;
+            vertical-align: top;
+        }
+
+        .booktabs tbody tr + tr td {
+            border-top: 0.5px solid #dcdcdc;
+        }
+
+        .booktabs th.num,
+        .booktabs td.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        /* Rysunki w stylu LaTeX figure / subfigure */
+        .figure-float {
+            margin: 1.5rem 0;
+        }
+
+        .subfigures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .subfigure {
+            margin: 0;
+            text-align: center;
+        }
+
+        .subfigure-btn {
+            display: block;
+            width: 100%;
+            padding: 0;
+            border: 1px solid #cccccc;
+            background: #ffffff;
+            cursor: zoom-in;
+        }
+
+        .subfigure-btn img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .subfigure-cap {
+            font-size: 0.86rem;
+            margin-top: 0.35rem;
+            color: #111111;
+        }
+
+        .figure-caption {
+            font-size: 0.92rem;
+            margin: 0.6rem 0 0;
+            text-align: justify;
+        }
+
+        /* Bibliografia w stylu LaTeX \thebibliography */
+        .references {
+            margin-top: 0.5rem;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .ref-item {
+            display: grid;
+            grid-template-columns: 2.2rem 1fr;
+            margin-bottom: 0.45rem;
+            text-align: justify;
+        }
+
+        .ref-num {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Podgląd obrazu (lightbox) */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            cursor: zoom-out;
+        }
+
+        .lightbox.is-open {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: min(1200px, 95vw);
+            max-height: 90vh;
+            background: #fff;
+            border: 1px solid #444;
+        }
+
+        /* Responsywność na ekranach mobilnych */
+        @media (max-width: 768px) {
+            .utility-bar {
+                margin: 10px 12px 0;
+            }
+
+            .paper {
+                margin: 10px 0 24px;
+                padding: 24px 18px 32px;
+                border-left: none;
+                border-right: none;
+            }
+
+            .abstract {
+                margin: 0 0.5rem 1.8rem;
+            }
+
+            .subfigures {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Ustawienia wydruku / zapisu do PDF */
+        @page {
+            size: A4;
+            margin: 20mm 20mm 22mm 20mm;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 11pt;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .paper {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            h2, h3 {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+
+            .listing, .table-float, .figure-float, .abstract, tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
+    </style>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<div class="utility-bar no-print">
+    <a href="index.html#projekty/stark-web-12b">← Powrót do artykułu (situus.pl)</a>
+    <button class="btn-print" type="button" onclick="window.print()">Drukuj / Zapisz jako PDF</button>
+</div>
+
+<main class="paper">
+    <header class="paper-header">
+        <h1 class="paper-title">Optymalizacja modelu sztucznej inteligencji Gemma 4 12B z wykorzystaniem metody LoRA oraz ustrukturyzowanego wnioskowania łańcuchowego</h1>
+        <p class="paper-author">Situus</p>
+        <p class="paper-affiliation">Badania niezależne · situus.pl</p>
+        <p class="paper-date">Czerwiec 2026</p>
+    </header>
+
+    <section class="abstract" aria-label="Streszczenie">
+        <div class="abstract-heading">Streszczenie</div>
+        <p>Niniejsza praca opisuje proces dostrajania (<em>fine-tuning</em>) otwartego modelu językowego Gemma 4 12B w kierunku generowania zaawansowanego kodu programistycznego (HTML/CSS/JS), ze szczególnym naciskiem na nowoczesną estetykę front-endu oraz logikę aplikacji webowych. Zmiana początkowej architektury (4B) na wariant 12B wymusiła powiększenie autorskiego zbioru danych treningowych z 1 do blisko 12,3 miliona tokenów. Ponadto wprowadzono rygorystyczną, 9-etapową strukturę algorytmiczną <em>Chain of Thought</em> (CoT) [1], aby wyeliminować błędy logiczne i tzw. pętle myślowe. W pracy opisano krytyczne zjawiska napotkane podczas treningu, m.in. katastrofalne zapominanie [2], optymalizację krzywych strat, paradoks parametru Dropout [3] oraz inżynierię konwersji GGUF. Zastosowanie adaptacji LoRA [4] pozwoliło na przeprowadzenie zaawansowanego fine-tuningu na konsumenckiej karcie graficznej RTX 5060 Ti 16 GB. Wytrenowany model (STARK-WEB 12B) zostanie udostępniony publicznie na licencji open-source.</p>
+        <p class="abstract-keywords"><strong><em>Słowa kluczowe:</em></strong> fine-tuning, LoRA, Chain of Thought, kwantyzacja QAT, destylacja wiedzy, duże modele językowe, generowanie kodu, Gemma 4.</p>
+    </section>
+
+    <article>
+        <h2 id="sec-1">1. Wstęp</h2>
+        <p>Duże modele językowe (LLM, <em>Large Language Models</em>) są parametrycznymi modelami autoregresyjnymi opartymi na architekturze Transformer [5], których wiedza zakodowana jest w miliardach wyuczonych wag. Początkowa faza niniejszych badań opierała się na modelu Gemma 4 w wersji 4B (4 miliardy parametrów). Empirycznie wykazano, że model ten nie posiadał dostatecznej pojemności (<em>model capacity</em>), aby generować poprawny logicznie kod JavaScript wymagany do tworzenia złożonych aplikacji przeglądarkowych.</p>
+        <p>Zjawisko to jest analogiczne do próby aproksymacji bardzo złożonej, wielowymiarowej funkcji za pomocą wielomianu zbyt niskiego stopnia – system nie dysponował wystarczającą liczbą parametrów, aby zakodować skomplikowane schematy logiczne. Zbiegło się to w czasie z premierą nowego wariantu: <strong>Gemma 4 12B (12 miliardów parametrów)</strong>. Decyzja o natychmiastowym przejściu na nową, trzykrotnie większą architekturę pozwoliła ominąć limity pojemności, lecz jednocześnie wymusiła przebudowę metodyki uczenia.</p>
+
+        <h2 id="sec-2">2. Podstawy teoretyczne (Przystępne wyjaśnienie)</h2>
+        <p>Przed przejściem do szczegółów technicznych i formalizmów matematycznych, niniejsza sekcja przedstawia kluczowe pojęcia wykorzystane w artykule w sposób przystępny, z zastosowaniem analogii ułatwiających zrozumienie dla czytelnika spoza dziedziny uczenia maszynowego.</p>
+
+        <h3>2.1. Autoregresyjne modelowanie języka</h3>
+        <p>Współczesne modele językowe, takie jak <strong>Gemma 4</strong>, są w swojej istocie <strong>zaawansowanymi systemami autoregresyjnej predykcji tokenów</strong> – funkcjonalnie przypominającymi systemy autouzupełniania tekstu znane z urządzeń mobilnych, lecz operującymi na znacznie większej skali.</p>
+        <p>Model uczy się na podstawie miliardów tekstów z internetu (książek, artykułów, kodu źródłowego). Jego zadaniem jest przewidzenie, jaki token (fragment słowa lub znaku) powinien pojawić się jako następny na podstawie dotychczasowego kontekstu. Jeśli napiszemy <code>"Stolicą Polski jest..."</code>, model na podstawie wyuczonych statystyk przypisze najwyższe prawdopodobieństwo tokenowi <code>"Warszawa"</code>. Analogicznie, przy generowaniu kodu HTML model przewiduje sekwencje tokenów (nawiasy, słowa kluczowe JavaScript, deklaracje CSS), które najczęściej współwystępują w podobnych kontekstach programistycznych.</p>
+
+        <h3>2.2. Pojemność modelu a złożoność zadania</h3>
+        <p>Wielkość modelu określa się w <strong>parametrach</strong> (oznaczanych literą B – od angielskiego <em>billions</em>, czyli miliardy). Parametry stanowią wyuczone wagi sieci neuronowej – im ich więcej, tym większą wiedzę i bardziej skomplikowane zależności model jest w stanie zakodować.</p>
+        <p>Początkowo próbowano trenować model w wersji <strong>Gemma 4 4B (4 miliardy parametrów)</strong>. Intuicyjnie można to porównać do próby nauczenia zdolnego, lecz początkującego studenta pisania zaawansowanych gier 3D w JavaScript – proste zadania (np. kalkulator) są wykonalne, ale złożona logika gier wyczerpuje pojemność reprezentacyjną modelu. Przejście na wersję <strong>Gemma 4 12B (12 miliardów parametrów)</strong> trzykrotnie zwiększyło liczbę wyuczalnych wag, co pozwoliło modelowi zakodować zarówno wiedzę o zaawansowanej trygonometrii, bibliotece Three.js do grafiki 3D, jak i o skomplikowanym zarządzaniu stanem okien w systemie operacyjnym.</p>
+
+        <h3>2.3. Chain of Thought (CoT) – wnioskowanie krok po kroku</h3>
+        <p>Wyobraź sobie, że ktoś każe Ci rozwiązać w pamięci, w ułamku sekundy, bardzo trudne zadanie matematyczne (np. pomnożyć 473 przez 289) i natychmiast wypowiedzieć na głos sam wynik. Istnieje ogromne prawdopodobieństwo, że się pomylisz. Jeśli jednak dostaniesz kartkę papieru (brudnopis) i rozpiszesz to zadanie krok po kroku (mnożenie pod kreską), bez trudu podasz bezbłędny wynik.</p>
+        <p>Dokładnie tym dla modelu jest <strong>Chain of Thought (CoT – Łańcuch Myśli)</strong> ukryty za specjalnymi znacznikami <code>&lt;|channel&gt;thought</code>. Zamiast kazać modelowi natychmiast pisać kod HTML (co często prowadzi do błędów logicznych, zapominania o zamknięciu tagów czy niedziałających zmiennych w JS), model jest zmuszany do „myślenia na głos” w brudnopisie. Najpierw planuje strukturę aplikacji, wypisuje potrzebne zmienne, projektuje wygląd w CSS, a dopiero po upewnieniu się, że plan jest spójny, zaczyna pisać właściwy kod. Brudnopis ten jest niewidoczny dla użytkownika końcowego, ale stanowi klucz do logicznej bezbłędności modelu.</p>
+
+        <h3>2.4. Metoda LoRA – efektywna adaptacja parametrów</h3>
+        <p>Główna wiedza modelu Gemma 4 12B (nasze 12 miliardów parametrów) to jak <strong>olbrzymia biblioteka narodowa zawierająca 12 miliardów grubych ksiąg</strong>. Gdybyśmy chcieli nauczyć model nowej specjalizacji (np. specyficznego, nowoczesnego stylu pisania kodu i myślenia w 9 krokach), tradycyjny trening wymagałby przepisania i zmodyfikowania wszystkich 12 miliardów książek od nowa. Wymagałoby to superkomputerów wartych miliony złotych i gigantycznych ilości prądu.</p>
+        <p>Metoda <strong>LoRA (Low-Rank Adaptation)</strong> rozwiązuje ten problem. Zamiast modyfikować całą bibliotekę (wagi bazowe modelu), zostawiamy ją całkowicie nienaruszoną (zamrożoną). Zamiast tego wręczamy bibliotekarzowi <strong>jeden mały, lekki notatnik</strong> (o objętości zaledwie kilkudziesięciu megabajtów). W tym notatniku zapisujemy wyłącznie różnice i nowe reguły – np. „stosuj styl cyberpunkowy”, „zawsze używaj 9 kroków myślenia”, „stosuj dynamiczne okna”. Kiedy zadajesz modelowi pytanie, korzysta on ze swojej ogólnej wiedzy z wielkich ksiąg (model bazowy), ale nakłada na nią specyficzne instrukcje zapisane w podręcznym notatniku (adapterze LoRA). Dzięki temu trening jest niezwykle tani, szybki i można go przeprowadzić na zwykłym, domowym komputerze.</p>
+
+        <h3>2.5. Zjawisko przeuczenia (Overfitting)</h3>
+        <p>Podczas pierwszych prób (wersja v1.0) model został poddany zbyt agresywnej adaptacji (zbyt wysoka skala LoRA bez regularyzacji dropoutem). W efekcie model uległ <strong>przeuczeniu</strong> (ang. <em>overfitting</em>) [3].</p>
+        <p>Można to porównać do ucznia, który wykuł na pamięć konkretne pytania i odpowiedzi z poprzednich egzaminów – na identycznym pytaniu odpowiada idealnie, lecz przy najdrobniejszym odstępstwie generuje zupełnie błędne odpowiedzi. Wersja v1.0 modelu potrafiła wygenerować estetycznie zaawansowany kod, ale przy instrukcjach spoza dystrybucji treningowej generowała niedziałający kod z błędami składniowymi (<em>typos</em>) i pustym ekranem w przeglądarce. Dopiero wprowadzenie kontrolowanego szumu (Dropout) w wersjach v1.2 i v1.3 zmusiło model do ekstrakcji <strong>ogólnych reguł programistycznych</strong> zamiast memoryzacji konkretnych przykładów.</p>
+
+        <h3>2.6. Kwantyzacja z uwzględnieniem treningu (QAT)</h3>
+        <p>Model Gemma 4 12B w pełnej precyzji zajmuje na dysku około 24 gigabajtów i wymaga bardzo drogich kart graficznych do uruchomienia. Aby uruchomić go na domowym laptopie, stosuje się <strong>kwantyzację</strong> – czyli kompresję wag (np. z formatu 16-bitowego do 4-bitowego). To trochę jak zmniejszanie rozmiaru i rozdzielczości zdjęcia, by zajmowało mniej miejsca na dysku.</p>
+        <p>Zwykła kwantyzacja (Post-Training Quantization) przypomina spakowanie rzeczy do plecaka na siłę po skończeniu pakowania – niektóre delikatne przedmioty (np. precyzyjne tokeny zamykające myślenie) mogą ulec zgnieceniu (zaokrągleniu do zera), przez co model zaczyna „bełkotać” i traci stabilność. W projekcie wykorzystano metodę <strong>QAT (Quantization-Aware Training)</strong>. Uczyliśmy model na wagach, które już w trakcie treningu „wiedziały”, że będą skompresowane. To tak, jakby <strong>trenować biegacza do biegu z ciężkim plecakiem od samego początku</strong>. Dzięki temu ostateczna kompresja do 4-bitów (format GGUF) nie popsuła zdolności logicznych modelu, pozostawiając go stabilnym i niezwykle szybkim.</p>
+
+        <h2 id="sec-3">3. Metodologia i Architektura Zbioru Danych (Dataset)</h2>
+        <p>Kluczowym aspektem projektu był nie tylko sam wolumen danych, lecz przede wszystkim ich jakość oraz specyficzna struktura. Zamiast budować jednorazowo statyczną bazę, zbiór danych był płynnie powiększany i skrupulatnie udoskonalany wraz z postępami i kolejnymi generacjami modelu. Model uczy się poprzez aproksymację wzorców, dlatego zbiór treningowy musiał w każdej iteracji reprezentować najwyższe standardy inżynierii oprogramowania. Aktualny zbiór danych (STARK-WEB v1.3) charakteryzuje się następującymi parametrami ilościowymi:</p>
+        <ul>
+            <li><strong>Liczba przykładów:</strong> 806</li>
+            <li><strong>Łączna liczba tokenów:</strong> 12 287 335</li>
+            <li><strong>Średnia długość przykładu:</strong> 15 244,8 tokenów</li>
+            <li><strong>Najdłuższy pojedynczy przykład:</strong> 42 341 tokenów</li>
+        </ul>
+        <p>W celu uzyskania wysokiej wierności (ang. <em>fidelity</em>) generowanego kodu, zrezygnowano z uproszczonej metody generowania jednostopniowego (ang. <em>zero-shot generation</em>). Zbiór danych został wytworzony przy użyciu techniki destylacji wiedzy (ang. <em>Knowledge Distillation</em>) [9] z komercyjnego modelu referencyjnego (Gemini 3.5 Flash High), przechodząc przez proces wieloetapowej rafinacji.</p>
+        <p>Każda z instrukcji (w obecnej iteracji 806) była przetwarzana przez model referencyjny minimum dwukrotnie. Wyjściowy kod był ponownie przesyłany jako kontekst wraz z dedykowanym promptem poprawiającym (ang. <em>critique-and-refine prompt</em>), którego zadaniem było zlokalizowanie i eliminacja błędów semantycznych, optymalizacja struktury oraz poprawa estetyki kodu źródłowego.</p>
+        <p>Z uwagi na optymalizację kosztów oraz dążenie do pełnej kontroli jakości, potok przetwarzania danych (ang. <em>data pipeline</em>) został podzielony na dwie odrębne fazy:</p>
+        <ul>
+            <li><strong>Faza manualna (interaktywna weryfikacja):</strong> Utrzymano paradygmat <em>human-in-the-loop</em> – cały wygenerowany kod był ręcznie sprawdzany i weryfikowany przed zapisem pod kątem poprawnego renderowania stylów, estetyki wizualnej i responsywności. Zweryfikowane pary (Prompt → Kod) zapisywano w formacie JSON Lines (plik <code>data.jsonl</code>).</li>
+            <li><strong>Faza zautomatyzowana (rekonstrukcja CoT):</strong> W drugim kroku dedykowany skrypt komunikował się przez API Google, by wygenerować ustrukturyzowane wnioskowanie CoT. Po odblokowaniu dodatkowych środków w Google Cloud, podjęto decyzję o wygenerowaniu ścieżek CoT od nowa dla całego zbioru za pomocą potężniejszego wariantu <strong>Gemini 3.5 Flash High</strong>, co drastycznie podniosło jakość destylowanej logiki.</li>
+        </ul>
+        <p>Struktura danych opiera się na monolitycznej spójności (Single-File Architecture – generowanie kodu HTML/CSS/JS w jednym pliku) oraz nowoczesnej estetyce (CSS Grid/Flexbox, glassmorphism, zmienne CSS, płynne animacje). Zbiór został opracowany w około 90% w języku angielskim i w 10% w języku polskim, zapewniając pełną dwujęzyczność.</p>
+
+        <h3>3.1. Charakterystyka tokenizacji i ekstrapolacja na jednostki tekstowe</h3>
+        <p>Zależność między liczbą tokenów a fizyczną objętością tekstu jest determinowana przez specyfikę językową i składniową. W języku angielskim 1 token odpowiada średnio 0,75 słowa (ok. 4 znakom), natomiast w języku polskim, z uwagi na fleksję, jest to od 1,2 do 1,8 tokenu na słowo. W przypadku hybrydowego kodu i myślenia w bazie STARK-WEB, empiryczny przelicznik wynosi około <strong>3,2 znaku ze spacjami na 1 token</strong>. Przekłada się się to na następujące miary:</p>
+        <ul>
+            <li><strong>Łączna objętość zbioru (12 287 335 tokenów):</strong> Odpowiada ponad 39,3 miliona znaków ze spacjami (ok. 6,7 miliona słów).</li>
+            <li><strong>Średnia długość rekordu (15 244,8 tokenów):</strong> Stanowi ekwiwalent ok. 48 800 znaków (ok. 8 400 słów) na jedno zadanie – objętość rozdziału książkowego.</li>
+            <li><strong>Najdłuższy pojedynczy rekord (42 341 tokenów):</strong> Przekłada się na blisko 135 500 znaków (ok. 23 200 słów) – objętość krótkiej książki wygenerowanej w jednym przebiegu.</li>
+        </ul>
+
+        <h2 id="sec-4">4. Algorytmizacja Wnioskowania (Chain of Thought)</h2>
+        <p>Podczas wstępnych testów, model stosujący tradycyjne wnioskowanie CoT często wpadał w nieskończone pętle myślowe, analizując problem cyklicznie i nie przechodząc do pisania kodu. Aby to rozwiązać, zaimplementowano sztywną algorytmizację procesu myślowego. Cały proces wnioskowania w zbiorze został podzielony na 9 kolejnych etapów i ograniczony twardym warunkiem stopu: znacznikiem <code>[END_OF_THINKING]</code> wewnątrz tagów strukturalnych.</p>
+
+        <div class="listing">
+            <p class="listing-caption"><strong>Listing 1:</strong> Struktura kanału wnioskowania (9-etapowy protokół Chain of Thought) wymuszana na modelu.</p>
+<pre><code>&lt;|channel&gt;thought
+1. Understand the Goal: [Podsumowanie celu]
+2. Inputs: [Dane wejściowe i zdarzenia]
+3. Output: [Elementy renderowane w DOM]
+4. Identify Key Constraints &amp; Technologies: [Wybór API i ograniczeń]
+5. Design the HTML Structure: [Planowanie struktury tagów]
+6. Design the CSS: [Mapowanie kolorów HSL i layoutów]
+7. Design the JavaScript: [Projektowanie logiki zdarzeń i pętli]
+8. Refinement &amp; Implementation: [Autokorekta i optymalizacje]
+9. Final Review: [Walidacja wymagań]
+---
+[END_OF_THINKING]
+&lt;channel|&gt;</code></pre>
+        </div>
+
+        <p>Sztywne oddzielenie kanału myślowego pozwoliło wyeliminować halucynacje logiczne i semantyczne niemal do zera.</p>
+
+        <h3>4.1. Konieczność budowy dedykowanego interfejsu (Stream API)</h3>
+        <p>Wprowadzenie dedykowanych tokenów strukturalnych (<code>&lt;|channel&gt;thought</code>) sprawiło, że standardowe oprogramowanie klienckie nie potrafiło poprawnie renderować tekstu wynikowego – wyświetlając myśli modelu jako jawny tekst dla użytkownika. Aby temu zapobiec, opracowano dedykowany interfejs webowy z asynchronicznym parserem API strumieniowego. Interfejs na bieżąco izoluje „napływające” fragmenty myślenia (chunks) do interaktywnego, zwijanego obszaru („brudnopisu”), wyświetlając użytkownikowi wyłącznie sformatowany, gotowy kod wynikowy.</p>
+
+        <h2 id="sec-5">5. Matematyczne Podstawy i Fuzja Wag LoRA (Low-Rank Adaptation)</h2>
+        <p>Uczenie modelu Gemma 4 12B w pełnej precyzji wymaga ogromnych zasobów sprzętowych. Zastosowano adaptację LoRA [4], która zamiast aktualizować pełną macierz wag \(W \in \mathbb{R}^{d \times k}\) (np. 4096 × 4096 – 16 milionów wag), wprowadza zmianę \(\Delta W\) jako iloczyn dwóch wąskich macierzy o niskim rzędzie (<em>rank</em>) \(r\):</p>
+        <div class="equation">
+            \[W_{\text{nowe}} = W + \Delta W = W + \frac{\alpha}{r} \, B A \quad \text{gdzie} \quad B \in \mathbb{R}^{d \times r}, \; A \in \mathbb{R}^{r \times k} \tag{1}\]
+        </div>
+        <p>Przy rzędzie \(r=64\), zamiast 16 milionów wag w pojedynczej warstwie, modyfikuje się jedynie ok. 524 288 parametrów (\(B\): 4096 × 64, \(A\): 64 × 4096). W zastosowanej konfiguracji LoRA jest aplikowana do siedmiu typów projekcji (<code>q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj</code>), co łącznie daje znacznie większą, lecz wciąż niewielką w porównaniu z pełnym modelem, liczbę parametrów trenowalnych. Pozwoliło to na drastyczne obniżenie wymagań pamięciowych.</p>
+
+        <h3>5.1. Zjawisko „Znikającej LoRA” (Vanishing LoRA) przy kompresji NF4</h3>
+        <p>Zidentyfikowano krytyczny problem podczas próby fuzji wag (łączenia macierzy LoRA z bazową macierzą wag) bezpośrednio na modelu skwantyzowanym do formatu 4-bitowego (NF4). Z uwagi na ogromną kompresję i małą precyzyję siatki NF4, niewielkie przesunięcia wag wnoszone przez LoRA były zaokrąglane do zera (zanikały). Wyeksportowany model tracił wyuczone zdolności logiczne i zachowywał się jak czysty model bazowy. Rozwiązaniem okazało się przeprowadzenie fuzji w pełnej precyzji BFloat16.</p>
+
+        <h3>5.2. Rozwiązanie limitu pamięci VRAM na GPU konsumenckim</h3>
+        <p>Przeprowadzenie fuzji wag 12B w precyzji BFloat16 wymaga ponad 24 GB pamięci, co na testowej karcie RTX 5060 Ti (16 GB) prowadziło do błędów braku pamięci (OOM). Aby to obejść, proces scalania zaimplementowano hybrydowo bezpośrednio na pamięci RAM i procesorze komputera (Device Map ustawiony na <code>cpu</code>). Mimo dłuższego czasu obliczeń, pozwoliło to na 100% precyzyjne scalenie modelu przed ostatecznym eksportem.</p>
+
+        <h3>5.3. Matematyczna walidacja fuzji wag normą L2</h3>
+        <p>W celu naukowej weryfikacji poprawności scalenia wag, wdrożono algorytm liczący globalną normę macierzy wag (odległość euklidesową wag, czyli normę L2) za pomocą funkcji <code>torch.norm()</code> przed i po fuzji. Wykrycie mierzalnej zmiany normy tensorów po fuzji dało empiryczny dowód na prawidłową integrację adaptera LoRA z modelem bazowym.</p>
+
+        <h2 id="sec-6">6. Optymalizacja Procesu Treningowego i Regularyzacja</h2>
+        <p>Proces dostrajania parametrów wymagał pokonania kilku barier algorytmicznych, które mogły doprowadzić do degradacji modelu:</p>
+
+        <h3>6.1. Katastrofalne zapominanie (Catastrophic Forgetting)</h3>
+        <p>Podczas wczesnej kalibracji zaobserwowano, że zbyt wysoka szybkość uczenia (<em>Learning Rate</em>) powodowała, że model szybko uczył się nowego formatu myślenia, ale drastycznie tracił swoją bazową wiedzę o składni języków [2]. Pętla CoT była poprawna, ale ostateczny kod HTML/JS zawierał błędy składniowe. Wymagało to obniżenia współczynnika uczenia.</p>
+
+        <h3>6.2. Paradoks LoRA Dropout i regularyzacja L2</h3>
+        <p>Początkowe założenie zerowej wartości Dropout (dla idealnej replikacji kodu) doprowadziło do dosłownego uczenia się kodu na pamięć (memoryzacja). Dopiero narzucenie 5% szumu (<code>lora_dropout = 0.05</code>) oraz L2 regularyzacji (<code>weight_decay = 0.01</code>) zmusiło model do wyciągania ogólnych reguł logicznych i składniowych, co całkowicie wyeliminowało błędy w wyjściowym kodzie.</p>
+
+        <h3>6.3. Szum kwantyzacyjny (PTQ vs QAT)</h3>
+        <p>Tradycyjna kompresja Post-Training Quantization (PTQ) modelu 16-bitowego do formatu 4-bitowego GGUF wprowadzała szum, który zacierał delikatne granice myślenia CoT (model mylił tokeny wyjścia <code>[END_OF_THINKING]</code>). Zastosowano technologię <strong>Quantization-Aware Training (QAT)</strong> [6] – jako model bazowy wybrano wariant <code>google/gemma-4-12B-it-qat-q4_0-unquantized</code> (symulujący szum kwantyzacyjny w trakcie uczenia). Dzięki temu ostateczny eksport do formatu GGUF 4-bit zachował stabilność logiczną modelu 16-bitowego.</p>
+
+        <h3>6.4. Zarządzanie VRAM i anomalie logowania</h3>
+        <p>Aby zmieścić trening kontekstu 43 000 tokenów w 16 GB VRAM, wdrożono <strong>Gradient Checkpointing</strong> [7] (dynamiczne przeliczanie aktywacji zamiast trzymania ich w pamięci podręcznej – oszczędność ok. 60% VRAM) oraz <strong>Paged AdamW 8-bit</strong> [8] (przenoszenie nieaktywnych stanów optymalizatora do pamięci RAM komputera). Wykryto i zdiagnozowano również błąd biblioteki Hugging Face Transformers, która przy nieliniowej akumulacji gradientów generowała fałszywe skoki błędu (skok <code>train_loss</code> do 2,3) na granicach epok, podczas gdy rzeczywista strata wynosiła stabilne 0,2.</p>
+
+        <h2 id="sec-7">7. Przebieg Eksperymentów i Ewolucja Modelu</h2>
+        <p>Rozwój modelu STARK-WEB przebiegał w czterech głównych fazach, co pozwoliło na dokładną analizę wpływu parametrów uczenia i danych na wynik końcowy:</p>
+        <ul>
+            <li><strong>Wersja v1.0 (Opublikowana wersja testowa):</strong> Pierwsza publiczna kompilacja testowa modelu. Była trenowana przy agresywnej skali LoRA (ratio Alpha/R = 2.0, czyli <code>LORA_ALPHA=128</code>, <code>LORA_R=64</code>) bez regularyzacji dropoutem. Model okazał się silnie przeuczony (<em>overfitted</em>). Choć generował estetycznie piękne style CSS, kod źródłowy zawierał krytyczne błędy logiczne i <em>typos</em> (literówki), co skutkowało pustym ekranem w przeglądarce i martwymi <em>event handlerami</em>.</li>
+            <li><strong>Wersja v1.1 (Wstępna kalibracja):</strong> Próba kalibracji parametrów przy wciąż agresywnych ustawieniach (ratio 2.0, LR 2e-5). Pomimo niskiej straty walidacyjnej (<code>eval_loss = 0.84</code>), model cierpiał na zjawisko <em>catastrophic forgetting</em> logicznego wnioskowania w JS. Kod CSS/HTML był bezbłędny, lecz logika JavaScript ulegała całkowitej degradacji.</li>
+            <li><strong>Wersja v1.2 (Regularyzacja parametrów):</strong> Wdrożono bezpieczniejszą konfigurację: zmniejszenie ratio Alpha/R do 1.0 (<code>LORA_ALPHA=64</code>), obniżenie LR do <code>1e-5</code>, dodanie <code>lora_dropout=0.05</code> oraz <code>weight_decay=0.01</code>. Zmiany te uratowały logikę modelu (stabilny <code>eval_loss = 0.9316</code>). Model pisał poprawny kod, lecz napotkano barierę w samym zbiorze danych – model radził sobie świetnie z layoutem, lecz brakowało mu zaawansowanych algorytmów i logiki JS.</li>
+            <li><strong>Wersja v1.3 (Zrównoważone rozszerzenie logiczne):</strong> Celowo rozszerzono zbiór danych o 77 niezwykle trudnych algorytmicznie przykładów (razem 806 rekordów / 12,28M tokenów) z zakresu CRUD, asynchroniczności, interakcji tabelarycznych i gier planszowych. Trening v1.3 zakończył się rewelacyjnym rezultatem – strata walidacyjna spadła do rekordowego <strong><code>eval_loss = 0,91493</code></strong> bez jakichkolwiek szumów. Model zyskał bezprecedensową zdolność logicznej syntezy.</li>
+        </ul>
+
+        <h2 id="sec-8">8. Wyniki i Analiza Porównawcza (Evaluation)</h2>
+        <p>Ewaluacja przeprowadzona na wariancie STARK-WEB 12B ukazuje wyraźny skok jakościowy w stosunku do komercyjnych modeli referencyjnych o podobnym lub większym rozmiarze.</p>
+
+        <h3>8.1. Wewnętrzny benchmark jakościowy (LLM-as-a-Judge)</h3>
+        <p>W celu uzyskania powtarzalnej i skalowalnej metryki ewaluacyjnej, opracowano wewnętrzny benchmark oparty na metodologii <em>LLM-as-a-Judge</em>. Zbiór testowy składał się z zestawu zróżnicowanych promptów wykraczających poza dystrybucję danych treningowych, obejmujących zarówno proste komponenty UI, jak i złożone aplikacje webowe z zaawansowaną logiką JavaScript. Każdy wygenerowany kod był automatycznie oceniany przez duży, zewnętrzny model SOTA (Gemini) w skali 0–100 pod kątem czterech kryteriów: <strong>poprawności kodu HTML/CSS</strong>, <strong>funkcjonalności logiki JavaScript</strong>, <strong>estetyki wizualnej i nowoczesności interfejsu</strong> oraz <strong>zgodności z instrukcją użytkownika</strong>. Wynik końcowy stanowił średnią ważoną tych komponentów.</p>
+
+        <div class="table-float">
+            <p class="table-caption"><strong>Tabela 1:</strong> Wyniki wewnętrznego benchmarku LLM-as-a-Judge na zbiorze testowym poza dystrybucją treningową.</p>
+            <table class="booktabs">
+                <thead>
+                    <tr>
+                        <th>Model / Wersja</th>
+                        <th class="num">Wynik benchmarku</th>
+                        <th class="num"><code>eval_loss</code></th>
+                        <th>Uwagi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Gemma 4 12B QAT <em>(model bazowy)</em></td>
+                        <td class="num">66,5</td>
+                        <td class="num">—</td>
+                        <td>Baseline SOTA bez fine-tuningu</td>
+                    </tr>
+                    <tr>
+                        <td>STARK-WEB v1.0</td>
+                        <td class="num">65,0</td>
+                        <td class="num">—</td>
+                        <td>Wyższa estetyka UI, lecz silny overfitting; błędy logiczne JS</td>
+                    </tr>
+                    <tr>
+                        <td>STARK-WEB v1.2</td>
+                        <td class="num">68,0</td>
+                        <td class="num">0,9316</td>
+                        <td>Regularyzacja Dropout + L2; stabilna logika</td>
+                    </tr>
+                    <tr>
+                        <td><strong>STARK-WEB v1.3</strong></td>
+                        <td class="num"><strong>70,5</strong></td>
+                        <td class="num"><strong>0,9149</strong></td>
+                        <td><strong>Rozszerzony dataset (+77 algorytmicznych); rekordowy wynik</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p>Wyniki ukazują charakterystyczną, nieliniową trajektorię rozwoju modelu. Wersja v1.0, pomimo subiektywnie lepszej estetyki generowanych interfejsów (wynikającej z agresywnej memoryzacji wzorców CSS ze zbioru treningowego), uzyskała wynik <strong>niższy</strong> od modelu bazowego (65,0 vs 66,5). Paradoks ten potwierdza destrukcyjny wpływ przeuczenia (<em>overfitting</em>) — model wytwarzał wizualnie atrakcyjne, lecz niedziałające aplikacje z martwymi <em>event handlerami</em> i błędami składniowymi w JavaScript, co sędzia LLM surowo penalizował. Dopiero wdrożenie regularyzacji w wersji v1.2 (Dropout 5%, L2 weight decay) pozwoliło przekroczyć baseline SOTA, osiągając 68,0. Ostateczna wersja v1.3, wzbogacona o 77 algorytmicznie zaawansowanych przykładów, osiągnęła wynik <strong>70,5</strong> — co stanowi wzrost o <strong>+6,0%</strong> względem modelu bazowego i potwierdza skuteczność zastosowanej metodologii ustrukturyzowanego CoT w połączeniu ze zbalansowaną regularyzacją.</p>
+
+        <h3>8.2. Wizualna analiza porównawcza</h3>
+
+        <figure class="figure-float">
+            <div class="subfigures">
+                <div class="subfigure">
+                    <button class="subfigure-btn" type="button" data-zoom="img/gemini3-5flash.png" aria-label="Powiększ zrzut ekranu z Gemini 3.5 Flash">
+                        <img src="img/gemini3-5flash.png" alt="Wynik z Gemini 3.5 Flash">
+                    </button>
+                    <div class="subfigure-cap">(a) Oryginał (Nauczyciel) – Gemini 3.5 Flash</div>
+                </div>
+                <div class="subfigure">
+                    <button class="subfigure-btn" type="button" data-zoom="img/stark-web-12b-v0.9.png" aria-label="Powiększ zrzut ekranu ze STARK-WEB 12B">
+                        <img src="img/stark-web-12b-v0.9.png" alt="Wynik z STARK-WEB 12B v0.9">
+                    </button>
+                    <div class="subfigure-cap">(b) Odtworzenie (Uczeń – wersja v0.9) – STARK-WEB 12B</div>
+                </div>
+            </div>
+            <figcaption class="figure-caption"><strong>Rysunek 1:</strong> Porównanie wygenerowanych interfejsów – model bazowy (Nauczyciel) vs. STARK-WEB 12B (Uczeń) dla identycznego polecenia <code>"Make an HTML snake game in 1 file"</code>.</figcaption>
+        </figure>
+
+        <p>Już na wczesnym etapie rozwoju (wersja v0.9) model lokalny („Uczeń”) zaczął w sposób powtarzalny przewyższać estetycznie swój model referencyjny („Nauczyciela”). Rysunek 1 przedstawia wygenerowaną przez oba systemy grę „Snake” na podstawie prostego promptu: <code>"Make an HTML snake game in 1 file"</code>. O ile model Gemini wygenerował poprawny logicznie, lecz surowy wizualnie interfejs, o tyle STARK-WEB 12B już w wersji v0.9 stworzył cyberpunkową aplikację „NEON SNAKE” z zaawansowaną poświatą neonową, dedykowanymi licznikami z wiodącymi zerami oraz automatyczną responsywnością (samodzielnie wykrył urządzenie mobilne i wyrenderował dotykowe przyciski sterujące na ekranie, ukrywając je na komputerach desktopowych).</p>
+
+        <h2 id="sec-9">9. Wnioski, Publikacja i Dalsze Badania</h2>
+        <p>Wytrenowany model zostanie udostępniony bezpłatnie w globalnym repozytorium <strong>Hugging Face</strong> pod nazwą <strong>STARK-WEB 12B</strong> na licencji <strong>Apache 2.0</strong>, umożliwiając komercyjne i naukowe wykorzystanie asystenta bez opłat licencyjnych.</p>
+        <p>Podczas przygotowania wersji do pracy lokalnej, zidentyfikowano brak kompatybilności narzędzi <code>llama.cpp</code> z nową klasą modelową Hugging Face: <code>Gemma4UnifiedForConditionalGeneration</code>. Przeprowadzono udany proces patchowania kodu źródłowego konwertera, co umożliwiło poprawny eksport wag.</p>
+        <p>Dalsze plany badawcze zakładają przeniesienie opracowanej metodologii ustrukturyzowanego CoT oraz potoku danych na większą architekturę – <strong>Gemma 4 26B</strong>. Eksperymenty będą realizowane w chmurze obliczeniowej z wykorzystaniem procesorów graficznych <strong>NVIDIA A100</strong>. Zakłada się hipotezę, że większa pojemność modelu 26B pozwoli na całkowite wyeliminowanie drobnych błędów w zaawansowanej logice, takich jak interakcje okienek w systemach operacyjnych typu Browser OS.</p>
+
+        <h2 id="bibliografia">10. Bibliografia</h2>
+        <div class="references">
+            <div class="ref-item"><span class="ref-num">[1]</span><span>J. Wei, X. Wang, D. Schuurmans, M. Bosma, B. Ichter, F. Xia, E. Chi, Q. Le, D. Zhou, „Chain-of-Thought Prompting Elicits Reasoning in Large Language Models”, <em>Advances in Neural Information Processing Systems (NeurIPS)</em>, vol. 35, 2022.</span></div>
+            <div class="ref-item"><span class="ref-num">[2]</span><span>M. McCloskey, N. J. Cohen, „Catastrophic Interference in Connectionist Networks: The Sequential Learning Problem”, <em>Psychology of Learning and Motivation</em>, vol. 24, pp. 109–165, 1989.</span></div>
+            <div class="ref-item"><span class="ref-num">[3]</span><span>N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever, R. Salakhutdinov, „Dropout: A Simple Way to Prevent Neural Networks from Overfitting”, <em>Journal of Machine Learning Research (JMLR)</em>, vol. 15, pp. 1929–1958, 2014.</span></div>
+            <div class="ref-item"><span class="ref-num">[4]</span><span>E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, W. Chen, „LoRA: Low-Rank Adaptation of Large Language Models”, <em>Proceedings of ICLR</em>, 2022.</span></div>
+            <div class="ref-item"><span class="ref-num">[5]</span><span>A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, I. Polosukhin, „Attention Is All You Need”, <em>Advances in Neural Information Processing Systems (NeurIPS)</em>, vol. 30, 2017.</span></div>
+            <div class="ref-item"><span class="ref-num">[6]</span><span>B. Jacob, S. Kligys, B. Chen, M. Zhu, M. Tang, A. Howard, H. Adam, D. Kalenichenko, „Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference”, <em>Proceedings of CVPR</em>, pp. 2704–2713, 2018.</span></div>
+            <div class="ref-item"><span class="ref-num">[7]</span><span>T. Chen, B. Xu, C. Zhang, C. Guestrin, „Training Deep Nets with Sublinear Memory Cost”, <em>arXiv preprint arXiv:1604.06174</em>, 2016.</span></div>
+            <div class="ref-item"><span class="ref-num">[8]</span><span>T. Dettmers, M. Lewis, Y. Belkada, L. Zettlemoyer, „8-bit Optimizers via Block-wise Quantization”, <em>Proceedings of ICLR</em>, 2022.</span></div>
+            <div class="ref-item"><span class="ref-num">[9]</span><span>G. Hinton, O. Vinyals, J. Dean, „Distilling the Knowledge in a Neural Network”, <em>arXiv preprint arXiv:1503.02531</em>, 2015.</span></div>
+            <div class="ref-item"><span class="ref-num">[10]</span><span>Google DeepMind, „Gemma 4: Open Models Based on Gemini Technology”, <em>Google Technical Report</em>, 2026.</span></div>
+        </div>
+    </article>
+</main>
+
+<div class="lightbox no-print" id="lightbox" role="dialog" aria-modal="true" aria-label="Podgląd obrazu">
+    <img id="lightboxImg" src="" alt="Powiększony zrzut ekranu">
+</div>
+
+<script src="situus.js?v=2" defer></script>
+<script>
+    (function () {
+        var lightbox = document.getElementById('lightbox');
+        var lightboxImg = document.getElementById('lightboxImg');
+        document.querySelectorAll('[data-zoom]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                var src = el.getAttribute('data-zoom');
+                if (src && lightbox && lightboxImg) {
+                    lightboxImg.src = src;
+                    lightbox.classList.add('is-open');
+                }
+            });
+        });
+        if (lightbox) {
+            lightbox.addEventListener('click', function () {
+                lightbox.classList.remove('is-open');
+            });
+        }
+        window.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && lightbox) {
+                lightbox.classList.remove('is-open');
+            }
+        });
+    })();
+</script>
+</body>
+</html>
