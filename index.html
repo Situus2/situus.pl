@@ -1525,6 +1525,94 @@
         }
         .dialog--zoom-bar .btn { width: auto; height: 36px; padding: 0 16px; font-size: 13.5px; }
 
+        /* --- Szklany pasek przewijania artykułu (liquidGL) ---
+           Pozycjonowany absolutnie względem <body>, dzięki czemu dzieli główne płótno WebGL
+           z kartami i nie wymusza osobnego kontekstu ani przerysowywania DOM-u na CPU. */
+        .art-scroll {
+            position: absolute;
+            top: 96px;
+            right: max(12px, env(safe-area-inset-right));
+            z-index: 15;
+            width: 28px;
+            height: calc(100vh - 122px);
+            display: flex;
+            justify-content: flex-end;
+            opacity: 0;
+            pointer-events: none;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            transition: opacity 0.26s ease;
+        }
+        .art-scroll.is-on {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .art-scroll-track {
+            width: 14px;
+            height: 100%;
+            transition: width 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.26s ease;
+        }
+        .art-scroll:hover .art-scroll-track,
+        .art-scroll.is-active .art-scroll-track,
+        .art-scroll.is-dragging .art-scroll-track {
+            width: 18px;
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+                inset 0 1px 0 rgba(255, 255, 255, 0.26);
+        }
+        .art-scroll-line {
+            position: absolute;
+            left: 50%;
+            top: 14px;
+            bottom: 14px;
+            width: 1px;
+            margin-left: -0.5px;
+            background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.22) 8%, rgba(255, 255, 255, 0.22) 92%, transparent);
+            pointer-events: none;
+        }
+        .art-scroll-thumb {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            top: 2px;
+            height: 64px;
+            border-radius: 999px;
+            pointer-events: none;
+        }
+        .art-scroll-fill,
+        .art-scroll-lens {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+        }
+        .art-scroll-fill {
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.16);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.45),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.14),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+                0 4px 12px rgba(4, 6, 18, 0.28);
+            transition: background 0.24s ease, box-shadow 0.24s ease;
+        }
+        .art-scroll:hover .art-scroll-fill,
+        .art-scroll.is-active .art-scroll-fill,
+        .art-scroll.is-dragging .art-scroll-fill {
+            background: rgba(255, 255, 255, 0.07);
+            box-shadow:
+                inset 0 1.5px 0 rgba(255, 255, 255, 0.65),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.22),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+                0 6px 16px rgba(4, 6, 18, 0.38);
+        }
+        .art-scroll-lens {
+            z-index: 0;
+            box-shadow: none;
+        }
+
         /* --- Mniejsze ekrany --- */
 
         @media (max-width: 900px) {
@@ -1564,6 +1652,13 @@
             .snake-compare { gap: 12px; }
             .spec { grid-template-columns: minmax(0, 1fr); }
             .cot-toggle { flex-direction: column; align-items: flex-start; gap: 10px; }
+
+            .art-scroll { right: 3px; width: 20px; }
+            .art-scroll-track { width: 9px; }
+            .art-scroll:hover .art-scroll-track,
+            .art-scroll.is-active .art-scroll-track,
+            .art-scroll.is-dragging .art-scroll-track { width: 13px; }
+            .art-scroll-thumb { left: 1.5px; right: 1.5px; }
         }
 
         /* Cztery karty w pasku: na bardzo wąskich telefonach lekko je ścieśniamy */
@@ -2417,6 +2512,18 @@
 
     </main>
 
+    <div class="art-scroll" id="art-scroll" hidden aria-hidden="true">
+        <div class="art-scroll-track glass pill">
+            <div class="glass-c">
+                <span class="art-scroll-line"></span>
+                <div class="art-scroll-thumb" id="art-scroll-thumb">
+                    <span class="art-scroll-fill"></span>
+                    <span class="art-scroll-lens glass pill"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <audio id="audio-unfinished-maps" src="audio/unfinished-maps-preview.mp3" preload="metadata"></audio>
     <audio id="audio-submerged" src="audio/submerged-preview.mp3" preload="metadata"></audio>
 
@@ -2638,6 +2745,145 @@
                 return validItems.length;
             }
 
+            // --- Szklany pasek przewijania dla widoku artykułu ---
+            const artScroll = document.getElementById('art-scroll');
+            const artScrollTrack = artScroll?.querySelector('.art-scroll-track');
+            const artScrollThumb = document.getElementById('art-scroll-thumb');
+            const viewsEl = document.querySelector('.views');
+            let artScrollActive = false;
+            let artHideTimer = 0;
+            let artPulseTimer = 0;
+            let artMetrics = { maxScroll: 0, trackInnerH: 1, thumbH: 64, inset: 2 };
+
+            function syncArtScroll(fromScroll) {
+                if (!artScroll || !artScrollThumb || !artScrollActive) return;
+                const vh = innerHeight;
+                const mobile = innerWidth <= 700;
+                const topPad = mobile ? 84 : 96;
+                const botPad = mobile ? 18 : 26;
+                const inset = mobile ? 1.5 : 2;
+                const railH = Math.max(120, vh - topPad - botPad);
+                const contentH = Math.max(vh, current ? current.offsetHeight : (viewsEl ? viewsEl.offsetHeight : document.documentElement.scrollHeight));
+                const maxScroll = Math.max(0, contentH - vh);
+
+                if (maxScroll <= 8) {
+                    artScroll.classList.remove('is-on');
+                    return;
+                }
+                if (!artScroll.classList.contains('is-on')) {
+                    requestAnimationFrame(() => {
+                        if (artScrollActive) artScroll.classList.add('is-on');
+                    });
+                }
+
+                const sy = Math.min(maxScroll, Math.max(0, scrollY));
+                const railTop = Math.min(sy + topPad, Math.max(0, contentH - railH - 4));
+                const trackInnerH = Math.max(80, railH - inset * 2);
+                const thumbH = Math.round(Math.max(48, Math.min(trackInnerH * 0.65, trackInnerH * (vh / contentH))));
+                const maxTravel = Math.max(1, trackInnerH - thumbH);
+                const thumbTop = inset + (sy / maxScroll) * maxTravel;
+
+                artMetrics = { maxScroll, trackInnerH, thumbH, inset };
+                artScroll.style.top = railTop + 'px';
+                artScroll.style.height = railH + 'px';
+                artScrollThumb.style.top = thumbTop.toFixed(2) + 'px';
+                artScrollThumb.style.height = thumbH + 'px';
+
+                if (fromScroll) {
+                    if (!artScroll.classList.contains('is-active')) {
+                        artScroll.classList.add('is-active');
+                        animateGlass(300);
+                    }
+                    clearTimeout(artPulseTimer);
+                    artPulseTimer = setTimeout(() => {
+                        artScroll.classList.remove('is-active');
+                        animateGlass(300);
+                    }, 520);
+                }
+                window.liquidGL?.wake?.(180);
+            }
+
+            function updateArtScrollView(nextView, instant) {
+                if (!artScroll) return;
+                clearTimeout(artHideTimer);
+                artScrollActive = !!nextView?.querySelector('.page--article');
+                if (artScrollActive) {
+                    artScroll.hidden = false;
+                    syncArtScroll(false);
+                    if (artMetrics.maxScroll > 8) {
+                        if (instant || reduced) {
+                            artScroll.classList.add('is-on');
+                        } else {
+                            requestAnimationFrame(() => artScroll.classList.add('is-on'));
+                        }
+                    }
+                } else {
+                    artScroll.classList.remove('is-on', 'is-active', 'is-dragging');
+                    if (instant || reduced) {
+                        artScroll.hidden = true;
+                    } else {
+                        artHideTimer = setTimeout(() => { artScroll.hidden = true; }, 280);
+                    }
+                }
+            }
+
+            if (artScroll && artScrollTrack && artScrollThumb) {
+                let dragging = false;
+                let grabOffset = 0;
+
+                const scrollToPointer = clientY => {
+                    const r = artScrollTrack.getBoundingClientRect();
+                    const { maxScroll, trackInnerH, thumbH, inset } = artMetrics;
+                    if (maxScroll <= 0) return;
+                    const maxTravel = Math.max(1, trackInnerH - thumbH);
+                    const y = clientY - r.top - inset - grabOffset;
+                    const ratio = Math.min(1, Math.max(0, y / maxTravel));
+                    scrollTo(0, ratio * maxScroll);
+                    syncArtScroll(false);
+                };
+
+                artScroll.addEventListener('pointerenter', () => animateGlass(300));
+                artScroll.addEventListener('pointerleave', () => animateGlass(300));
+
+                artScroll.addEventListener('pointerdown', e => {
+                    if (e.button !== 0 && e.pointerType === 'mouse') return;
+                    e.preventDefault();
+                    syncArtScroll(false);
+                    const tr = artScrollThumb.getBoundingClientRect();
+                    if (e.clientY >= tr.top - 6 && e.clientY <= tr.bottom + 6) {
+                        grabOffset = e.clientY - tr.top;
+                    } else {
+                        grabOffset = artMetrics.thumbH / 2;
+                    }
+                    dragging = true;
+                    artScroll.classList.add('is-dragging');
+                    artScroll.setPointerCapture(e.pointerId);
+                    scrollToPointer(e.clientY);
+                    animateGlass(320);
+                });
+
+                artScroll.addEventListener('pointermove', e => {
+                    if (!dragging) return;
+                    scrollToPointer(e.clientY);
+                });
+
+                const stopDrag = () => {
+                    if (!dragging) return;
+                    dragging = false;
+                    artScroll.classList.remove('is-dragging');
+                    animateGlass(320);
+                };
+                artScroll.addEventListener('pointerup', stopDrag);
+                artScroll.addEventListener('pointercancel', stopDrag);
+                artScroll.addEventListener('lostpointercapture', stopDrag);
+
+                if (viewsEl && typeof ResizeObserver === 'function') {
+                    new ResizeObserver(() => {
+                        if (artScrollActive) syncArtScroll(false);
+                    }).observe(viewsEl);
+                }
+            }
+
             function finishLeaving() {
                 clearTimeout(leaveTimer);
                 document.querySelectorAll('.view.is-leaving').forEach(v => {
@@ -2645,6 +2891,7 @@
                     v.style.height = v.style.top = '';
                     if (v !== current) v.classList.remove('is-on');
                 });
+                if (artScrollActive) syncArtScroll(false);
             }
 
             function show(route, instant) {
@@ -2677,6 +2924,7 @@
                 if (instant || reduced || !prev) {
                     prev?.classList.remove('is-on');
                     next.classList.add('is-on');
+                    updateArtScrollView(next, true);
                     animateGlass(200);
                 } else {
                     prev.classList.add('is-leaving', leave);
@@ -2690,6 +2938,7 @@
                         length = cascade(next) * 55 + 760;
                     }
                     leaveTimer = setTimeout(finishLeaving, 480);
+                    updateArtScrollView(next, false);
                     animateGlass(length);
                 }
 
@@ -2697,8 +2946,8 @@
             }
 
             addEventListener('hashchange', () => show(routeOf(location.hash)));
-            addEventListener('resize', () => { setTab(s.active, true); animateGlass(300); });
-            addEventListener('scroll', () => glassText?.render(), { passive: true });
+            addEventListener('resize', () => { setTab(s.active, true); syncArtScroll(false); animateGlass(300); });
+            addEventListener('scroll', () => { glassText?.render(); syncArtScroll(true); }, { passive: true });
             document.fonts?.ready.then(() => setTab(s.active, true));
 
             // Ile dni trwają prace (np. nad Submerged)
@@ -3025,7 +3274,7 @@
                     liquidGL({ ...base, target: '.w-tracks, .w-apps, .w-project, .project-card, .list-card, .tl-card, .story, .tool-card, .text-card', bevelWidth: 0.22, frost: 0.4, magnify: 1.025 });
 
                     // Pigułki: faza na całą wysokość, więc tło zagina się od krawędzi do środka
-                    liquidGL({ ...base, target: '.nav, .seg, .back, .human, .tl-tag, .scrub-track, .preview-scrub', bevelWidth: 0.5, frost: 0.3, refraction: 1.4, magnify: 1.04 });
+                    liquidGL({ ...base, target: '.nav, .seg, .back, .human, .tl-tag, .scrub-track, .preview-scrub, .art-scroll-track', bevelWidth: 0.5, frost: 0.3, refraction: 1.4, magnify: 1.04 });
 
                     // Ikony narzędzi (start, lista, szczegóły): wypukłe kostki płynnego szkła
                     liquidGL({ ...base, target: '.w-apps .app-icon, .tool-card .app-icon, .app-head .app-icon', shadow: false, bevelWidth: 0.36, frost: 0.3, refraction: 1.5, bevelDepth: 1.2, aberration: 0.1, magnify: 1.1 });
@@ -3033,8 +3282,8 @@
                     // Koraliki na osi czasu: małe kulki szkła, mocno powiększają to, co pod nimi
                     liquidGL({ ...base, target: '.bead', bevelWidth: 0.5, frost: 0, refraction: 1.7, bevelDepth: 1.2, aberration: 0.1, magnify: 1.25 });
 
-                    // Soczewka wybranego utworu na szynie historii – rysowana po szynie, więc leży na niej
-                    liquidGL({ ...base, target: '.scrub-lens', shadow: false, bevelWidth: 0.5, frost: 0, refraction: 1.8, bevelDepth: 1.3, aberration: 0.12, magnify: 1.15 });
+                    // Soczewka wybranego utworu na szynie historii oraz kropla suwaka artykułu – rysowane po szynie, więc leżą na niej
+                    liquidGL({ ...base, target: '.scrub-lens, .art-scroll-lens', shadow: false, bevelWidth: 0.5, frost: 0, refraction: 1.8, bevelDepth: 1.3, aberration: 0.12, magnify: 1.15 });
 
                     // Kapsułka: czysta soczewka nad szkłem paska, bez cienia, lekko powiększa
                     liquidGL({
