@@ -552,9 +552,124 @@
             justify-content: space-between;
             gap: 16px 24px;
         }
-        .music-head .page-lead { margin: 6px 0 0; max-width: 44ch; font-size: 15px; line-height: 1.45; }
+        .music-head .page-lead { margin: 6px 0 0; max-width: 48ch; font-size: 15px; line-height: 1.45; }
         .music-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
         .music-bar .seg { margin: 0; }
+
+        /* Przełącznik podkategorii w Muzyce: Oryginalne utwory vs Remixy / Covery */
+        .music-subnav {
+            margin-top: 22px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px 20px;
+        }
+        .music-tabs { z-index: 20; display: inline-flex; pointer-events: auto; }
+        .music-tabs-bar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .music-tab {
+            position: relative;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 40px;
+            padding: 0 18px;
+            border-radius: 999px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--ink-2);
+            transform-origin: 50% 50%;
+            transition: color 0.25s;
+            white-space: nowrap;
+            -webkit-user-drag: none;
+        }
+        .music-tab:hover, .music-tab[aria-selected="true"] { color: var(--ink); }
+        .music-tab[aria-selected="true"] { font-weight: 600; }
+
+        /* Kapsułka w przełączniku Muzyka: identyczna sprężyna i soczewka liquidGL jak w górnym pasku */
+        .music-tab-fill, .music-tab-lens {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 0;
+            height: 40px;
+            border-radius: 20px;
+            pointer-events: none;
+        }
+        .music-tab-fill {
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        }
+        .music-tab-lens { z-index: 0; }
+        .music-tab-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 650;
+            background: rgba(255, 255, 255, 0.09);
+            color: var(--ink-2);
+            transition: background 0.22s ease, color 0.22s ease;
+        }
+        .music-tab[aria-selected="true"] .music-tab-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        /* Panele podkategorii Muzyka: przenikanie i kaskada identyczne jak główne widoki */
+        .music-panels { position: relative; }
+        .js .music-panels { display: grid; }
+        .music-panel {
+            grid-area: 1 / 1;
+            min-width: 0;
+            transition: opacity 0.34s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .js .music-panel:not(.is-on) { display: none; }
+        .music-panel.is-leaving { position: absolute; top: 0; left: 0; right: 0; pointer-events: none; }
+        .music-panel.to-fade { opacity: 0; transform: scale(0.97); transition-duration: 0.24s, 0.32s; }
+
+        /* Sekcja Remixy / Covery */
+        .covers-section { margin-top: 26px; }
+        .covers-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 16px;
+        }
+        .cover-card .glass-c {
+            position: relative;
+            display: grid;
+            padding: 20px 22px;
+        }
+        .cover-card-body {
+            display: grid;
+            grid-template-columns: 184px minmax(0, 1fr);
+            gap: 26px;
+            align-items: center;
+        }
+        .cover-origin {
+            color: var(--ink-2);
+        }
+        .cover-style {
+            margin-top: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #c8c1ff;
+        }
 
         .human .glass-c {
             display: flex;
@@ -1641,7 +1756,15 @@
             .page-lead { margin-bottom: 22px; font-size: 16px; }
             .release { grid-template-columns: minmax(0, 1fr); gap: 22px; }
             .art { width: min(260px, 70vw); }
-            .history { margin-top: 36px; }
+            .history { margin-top: 24px; }
+            .music-subnav { margin-top: 18px; }
+            .music-tabs { width: 100%; }
+            .music-tabs-bar { width: 100%; justify-content: space-between; }
+            .music-tab { flex: 1; justify-content: center; padding: 0 10px; font-size: 13.5px; }
+            .cover-card .glass-c { padding: 16px; }
+            .cover-card-body { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+            .cover-card-body .story-cover { width: min(220px, 62vw); }
+            .cover-card-body .story-title { font-size: 30px; }
             .app-head { flex-direction: column; align-items: flex-start; gap: 16px; }
             .app-head .app-icon { width: 88px; height: 88px; border-radius: 22px; }
             .app-head .app-icon .glyph { width: 56px; height: 56px; }
@@ -1819,7 +1942,7 @@
                 <div class="music-head">
                     <div>
                         <h2 class="page-title" id="t-muzyka" tabindex="-1">Muzyka</h2>
-                        <p class="page-lead">Utwory według daty powstania.</p>
+                        <p class="page-lead">Autorskie utwory według daty powstania oraz własne remixy i&nbsp;covery.</p>
                     </div>
 
                     <div class="music-bar">
@@ -1838,9 +1961,26 @@
                     </div>
                 </div>
 
-                <!-- Historia: kiedy powstawały utwory (nie kiedy wyszły – serwisy publikują z opóźnieniem).
+                <!-- Podział na autorskie, oryginalne utwory (oś czasu) oraz zakładkę Remixy / Covery -->
+                <div class="music-subnav">
+                    <div class="glass pill music-tabs" role="tablist" aria-label="Podział utworów">
+                        <div class="glass-c music-tabs-bar">
+                            <span class="music-tab-lens" aria-hidden="true"></span>
+                            <span class="music-tab-fill" aria-hidden="true"></span>
+                            <button type="button" class="music-tab" role="tab" aria-selected="true" aria-controls="panel-oryginalne" id="tab-oryginalne" data-music-tab="oryginalne">
+                                Oryginalne utwory <span class="music-tab-count">4</span>
+                            </button>
+                            <button type="button" class="music-tab" role="tab" aria-selected="false" aria-controls="panel-covery" id="tab-covery" data-music-tab="covery">
+                                Remixy / Covery <span class="music-tab-count">2</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="music-panels">
+                <!-- Historia: kiedy powstawały autorskie utwory (nie kiedy wyszły – serwisy publikują z opóźnieniem).
                      Na komputerze szklany suwak z kartą historii, na telefonie oś pionowa (.timeline). -->
-                <section class="history" aria-label="Oś czasu powstawania utworów">
+                <section class="history music-panel is-on" id="panel-oryginalne" role="tabpanel" aria-labelledby="tab-oryginalne" data-music-panel="oryginalne" aria-label="Oś czasu powstawania autorskich utworów">
 
                     <!-- Suwak: pozycje liczone z dat (skrypt przelicza je co dzień, tu wartości na 25 października) -->
                     <div class="scrub">
@@ -2014,9 +2154,80 @@
                                     <span class="tl-text"><b>Submerged</b><span class="status status--wip">W trakcie<span class="since" data-since="2026-10-04" hidden></span></span></span>
                                 </a>
                             </div>
-                                                    </li>
+                        </li>
                     </ol>
                 </section>
+
+                <!-- Zakładka: Remixy / Covery -->
+                <section class="covers-section music-panel" id="panel-covery" role="tabpanel" aria-labelledby="tab-covery" data-music-panel="covery" aria-label="Remixy i covery">
+                    <div class="covers-grid">
+                        <article class="glass cover-card">
+                            <div class="glass-c">
+                                <div class="cover-card-body">
+                                    <img class="story-cover" src="img/okladki/what-went-wrong-600.webp" alt="Okładka coveru What Went Wrong (Helluva Boss Sezon 3)" width="600" height="600" decoding="async">
+                                    <div class="story-text">
+                                        <p class="story-meta"><span class="cover-origin">Helluva Boss · Sezon 3</span></p>
+                                        <h3 class="story-title">What Went Wrong</h3>
+                                        <p class="cover-style">Wersja dramatyczna na&nbsp;fortepianie (Dramatic Piano Cover)</p>
+                                        <p class="story-desc">Dramatyczna, fortepianowa reinterpretacja piosenki „What Went Wrong” z&nbsp;trzeciego sezonu Helluva Boss. Ciężkie, nasycone emocjami akordy w&nbsp;niskim rejestrze, narastające napięcie i&nbsp;surowa ekspresja skupiona w&nbsp;całości na brzmieniu fortepianu.</p>
+                                        <div class="actions">
+                                            <div class="glass pill preview-scrub">
+                                                <div class="glass-c">
+                                                    <button type="button" class="preview-play" data-preview-toggle="what-went-wrong" aria-pressed="false" aria-label="Posłuchaj wersji roboczej What Went Wrong">
+                                                        <svg aria-hidden="true"><use href="#i-play" data-preview-icon/></svg>
+                                                    </button>
+                                                    <div class="preview-seek" data-preview-bar="what-went-wrong" role="slider" tabindex="0" aria-label="Postęp odsłuchu What Went Wrong" aria-valuemin="0" aria-valuemax="205" aria-valuenow="0">
+                                                        <span class="preview-track"><span class="preview-bar-fill" data-preview-bar-fill></span></span>
+                                                    </div>
+                                                    <span class="preview-clock" data-preview-clock>0:00 / 3:25</span>
+                                                </div>
+                                            </div>
+                                            <a class="btn" href="#muzyka/what-went-wrong">Szczegóły <svg aria-hidden="true"><use href="#i-chev"/></svg></a>
+                                        </div>
+                                        <ul class="story-facts">
+                                            <li>Oryginał: Helluva Boss (Sezon 3)</li>
+                                            <li>Aranżacja: Dramatic Piano (fortepian)</li>
+                                            <li class="preview-badge">Notatka: wersja robocza, niedokończona</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="glass cover-card">
+                            <div class="glass-c">
+                                <div class="cover-card-body">
+                                    <img class="story-cover" src="img/okladki/dark-souls-600.webp" alt="Okładka coveru Gwyn, Lord of Cinder z Dark Souls" width="600" height="600" decoding="async">
+                                    <div class="story-text">
+                                        <p class="story-meta"><span class="cover-origin">Dark Souls</span></p>
+                                        <h3 class="story-title">Gwyn, Lord of Cinder</h3>
+                                        <p class="cover-style">Wersja orkiestralna epicka (Epic Orchestral Cover)</p>
+                                        <p class="story-desc">Monumentalna, orkiestralna aranżacja kultowego tematu z&nbsp;finału pierwszego Dark Souls (oryg. Motoi Sakuraba). Zamiast oszczędnego, samotnego fortepianu z&nbsp;oryginału – pełny rozmach symfoniczny z&nbsp;potężną sekcją smyczków, dętymi blaszanymi, chórem i&nbsp;uderzeniami perkusji budującymi epicki klimat.</p>
+                                        <div class="actions">
+                                            <div class="glass pill preview-scrub">
+                                                <div class="glass-c">
+                                                    <button type="button" class="preview-play" data-preview-toggle="dark-souls" aria-pressed="false" aria-label="Posłuchaj orkiestralnego coveru Dark Souls">
+                                                        <svg aria-hidden="true"><use href="#i-play" data-preview-icon/></svg>
+                                                    </button>
+                                                    <div class="preview-seek" data-preview-bar="dark-souls" role="slider" tabindex="0" aria-label="Postęp odsłuchu Gwyn, Lord of Cinder" aria-valuemin="0" aria-valuemax="94" aria-valuenow="0">
+                                                        <span class="preview-track"><span class="preview-bar-fill" data-preview-bar-fill></span></span>
+                                                    </div>
+                                                    <span class="preview-clock" data-preview-clock>0:00 / 1:34</span>
+                                                </div>
+                                            </div>
+                                            <a class="btn" href="#muzyka/dark-souls">Szczegóły <svg aria-hidden="true"><use href="#i-chev"/></svg></a>
+                                        </div>
+                                        <ul class="story-facts">
+                                            <li>Oryginał: Dark Souls OST (Gwyn, Lord of Cinder)</li>
+                                            <li>Aranżacja: Epicka orkiestralna</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+                </div>
             </div>
         </section>
 
@@ -2167,6 +2378,85 @@
                 </div>
 
                 <a class="next" href="#muzyka/unsolved">Następny: Unsolved <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></a>
+            </div>
+        </section>
+
+        <!-- ============ Szczegóły coverów (Remixy / Covery) ============ -->
+        <section class="view" data-view="muzyka/what-went-wrong" data-title="What Went Wrong (Dramatic Piano Cover) – Situus" aria-labelledby="t-what-went-wrong">
+            <div class="page">
+                <div class="glass pill back"><a class="glass-c" href="#muzyka/covery"><svg aria-hidden="true"><use href="#i-back"/></svg>Remixy / Covery</a></div>
+
+                <div class="release">
+                    <img class="art" src="img/okladki/what-went-wrong-600.webp" alt="Okładka coveru What Went Wrong (Helluva Boss Sezon 3)" width="600" height="600" decoding="async">
+                    <div>
+                        <p class="eyebrow">Cover · Helluva Boss (Sezon 3)</p>
+                        <h2 class="detail-title" id="t-what-went-wrong" tabindex="-1">What Went Wrong</h2>
+                        <p class="detail-sub">Wersja dramatyczna na&nbsp;fortepianie · <span class="preview-badge">Wersja robocza (niedokończona)</span></p>
+                        <div class="actions">
+                            <div class="glass pill preview-scrub">
+                                <div class="glass-c">
+                                    <button type="button" class="preview-play" data-preview-toggle="what-went-wrong" aria-pressed="false" aria-label="Posłuchaj wersji roboczej What Went Wrong">
+                                        <svg aria-hidden="true"><use href="#i-play" data-preview-icon/></svg>
+                                    </button>
+                                    <div class="preview-seek" data-preview-bar="what-went-wrong" role="slider" tabindex="0" aria-label="Postęp odsłuchu What Went Wrong" aria-valuemin="0" aria-valuemax="205" aria-valuenow="0">
+                                        <span class="preview-track"><span class="preview-bar-fill" data-preview-bar-fill></span></span>
+                                    </div>
+                                    <span class="preview-clock" data-preview-clock>0:00 / 3:25</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="preview-note"><span class="preview-badge">Wersja robocza – niedokończona:</span> utwór jest jeszcze w&nbsp;trakcie prac i&nbsp;stanowi nieukończony szkic aranżacji fortepianowej.</p>
+                    </div>
+                </div>
+
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <p>Dramatyczna aranżacja fortepianowa piosenki „What Went Wrong” z&nbsp;trzeciego sezonu Helluva Boss. Cały ciężar utworu został przeniesiony na pojedynczy fortepian – głębokie, rezonujące akordy w&nbsp;dolnym rejestrze kontrastują z&nbsp;wyrazistą linią melodyczną, budując gęste, emocjonalne napięcie.</p>
+                        <h3>Status prac (wersja robocza)</h3>
+                        <p>Udostępnione nagranie to <strong>wersja robocza i&nbsp;niedokończona</strong>. Szkic powstał jako próba uchwycenia dramatycznego charakteru oryginału w&nbsp;surowej, czysto fortepianowej formie i&nbsp;wciąż czeka na domknięcie wybranych partii, dopracowanie artykulacji oraz finalny miks.</p>
+                    </div>
+                </div>
+
+                <a class="next" href="#muzyka/dark-souls">Następny cover: Gwyn, Lord of Cinder (Dark Souls) <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></a>
+            </div>
+        </section>
+
+        <section class="view" data-view="muzyka/dark-souls" data-title="Gwyn, Lord of Cinder (Dark Souls Orchestral Cover) – Situus" aria-labelledby="t-dark-souls">
+            <div class="page">
+                <div class="glass pill back"><a class="glass-c" href="#muzyka/covery"><svg aria-hidden="true"><use href="#i-back"/></svg>Remixy / Covery</a></div>
+
+                <div class="release">
+                    <img class="art" src="img/okladki/dark-souls-600.webp" alt="Okładka coveru Gwyn, Lord of Cinder z Dark Souls" width="600" height="600" decoding="async">
+                    <div>
+                        <p class="eyebrow">Cover · Dark Souls</p>
+                        <h2 class="detail-title" id="t-dark-souls" tabindex="-1">Gwyn, Lord of Cinder</h2>
+                        <p class="detail-sub">Wersja orkiestralna epicka (Epic Orchestral Cover)</p>
+                        <div class="actions">
+                            <div class="glass pill preview-scrub">
+                                <div class="glass-c">
+                                    <button type="button" class="preview-play" data-preview-toggle="dark-souls" aria-pressed="false" aria-label="Posłuchaj orkiestralnego coveru Dark Souls">
+                                        <svg aria-hidden="true"><use href="#i-play" data-preview-icon/></svg>
+                                    </button>
+                                    <div class="preview-seek" data-preview-bar="dark-souls" role="slider" tabindex="0" aria-label="Postęp odsłuchu Gwyn, Lord of Cinder" aria-valuemin="0" aria-valuemax="94" aria-valuenow="0">
+                                        <span class="preview-track"><span class="preview-bar-fill" data-preview-bar-fill></span></span>
+                                    </div>
+                                    <span class="preview-clock" data-preview-clock>0:00 / 1:34</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="preview-note">Pełna aranżacja orkiestralna stworzona w&nbsp;100% ręcznie w&nbsp;DAW (No AI).</p>
+                    </div>
+                </div>
+
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <p>Epicka, symfoniczna reinterpretacja motywu „Gwyn, Lord of Cinder” skomponowanego oryginalnie przez Motoiego Sakurabę na finał pierwszego Dark Souls. Podczas gdy oryginał zaskakiwał gracza wyciszonym, kameralnym fortepianem, ta wersja przekształca rozpoznawalny trzyczęściowy temat w&nbsp;monumentalne starcie z&nbsp;pełną orkiestrą.</p>
+                        <h3>Aranżacja i brzmienie</h3>
+                        <p>Kompozycja otwiera się narastającym napięciem smyczków, do których stopniowo dołączają potężne dęte blaszane, chór oraz ciężka sekcja perkusyjna. Zachowując melancholijny rdzeń melodii z&nbsp;gry, aranżacja nadaje jej rozmach finałowej bitwy i&nbsp;gęstą, filmową przestrzeń.</p>
+                    </div>
+                </div>
+
+                <a class="next" href="#muzyka/what-went-wrong">Poprzedni cover: What Went Wrong (Helluva Boss) <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></a>
             </div>
         </section>
 
@@ -2526,6 +2816,8 @@
 
     <audio id="audio-unfinished-maps" src="audio/unfinished-maps-preview.mp3" preload="metadata"></audio>
     <audio id="audio-submerged" src="audio/submerged-preview.mp3" preload="metadata"></audio>
+    <audio id="audio-what-went-wrong" src="audio/what-went-wrong.mp3" preload="metadata"></audio>
+    <audio id="audio-dark-souls" src="audio/dark-souls.mp3" preload="metadata"></audio>
 
     <dialog id="chat-dialog" class="dialog" aria-labelledby="chat-dialog-title">
         <div class="dialog-body">
@@ -2717,17 +3009,18 @@
             function routeOf(hash) {
                 const raw = decodeURIComponent(hash.replace(/^#\/?/, '')) || 'start';
                 const r = raw.replace(/^narzedzia(?=\/|$)/, 'projekty');
+                if (r === 'muzyka/oryginalne' || r === 'muzyka/covery') return 'muzyka';
                 return views.has(r) ? r : 'start';
             }
 
-            // Kolejne elementy strony dostają rosnące opóźnienie (--i w CSS)
-            function cascade(view) {
-                const items = [];
-                view.querySelectorAll('.home-kicker, .mark, .home-widgets > *, .page > *').forEach(el => {
-                    if (el.classList.contains('apps-grid') || el.classList.contains('projects-list')) items.push(...el.children);
-                    else if (el.classList.contains('history')) items.push(el.querySelector('.scrub'), el.querySelector('.story'), ...el.querySelectorAll('.tl-item'));
-                    else items.push(el);
-                });
+            function panelItems(panel) {
+                if (!panel) return [];
+                if (panel.classList.contains('history')) return [panel.querySelector('.scrub'), panel.querySelector('.story'), ...panel.querySelectorAll('.tl-item')].filter(Boolean);
+                if (panel.classList.contains('covers-section')) return [...panel.querySelectorAll('.cover-card')];
+                return [panel];
+            }
+
+            function applyRise(items) {
                 const validItems = items.filter(Boolean);
                 validItems.forEach((el, i) => {
                     el.style.setProperty('--i', i);
@@ -2743,6 +3036,19 @@
                     el.addEventListener('animationend', done);
                 });
                 return validItems.length;
+            }
+
+            // Kolejne elementy strony dostają rosnące opóźnienie (--i w CSS)
+            function cascade(view) {
+                const items = [];
+                view.querySelectorAll('.home-kicker, .mark, .home-widgets > *, .page > *').forEach(el => {
+                    if (el.hidden) return;
+                    if (el.classList.contains('apps-grid') || el.classList.contains('projects-list')) items.push(...el.children);
+                    else if (el.classList.contains('music-panels')) items.push(...panelItems(el.querySelector('.music-panel.is-on')));
+                    else if (el.classList.contains('history') || el.classList.contains('covers-section')) items.push(...panelItems(el));
+                    else items.push(el);
+                });
+                return applyRise(items);
             }
 
             // --- Szklany pasek przewijania dla widoku artykułu ---
@@ -2924,11 +3230,13 @@
                 if (instant || reduced || !prev) {
                     prev?.classList.remove('is-on');
                     next.classList.add('is-on');
+                    if (route === 'muzyka' && !ms.w) setMusicPill(ms.active, true);
                     updateArtScrollView(next, true);
                     animateGlass(200);
                 } else {
                     prev.classList.add('is-leaving', leave);
                     next.classList.add('is-on');
+                    if (route === 'muzyka' && !ms.w) setMusicPill(ms.active, true);
                     let length = 600;
                     if (enter) {
                         next.classList.add(enter);
@@ -2945,10 +3253,222 @@
                 if (!instant) next.querySelector('[tabindex="-1"]')?.focus({ preventScroll: true });
             }
 
-            addEventListener('hashchange', () => show(routeOf(location.hash)));
-            addEventListener('resize', () => { setTab(s.active, true); syncArtScroll(false); animateGlass(300); });
+            // --- Podkategorie w zakładce Muzyka: Oryginalne utwory vs Remixy / Covery ---
+            // Ta sama sprężynująca kapsułka (.music-tab-lens + .music-tab-fill) i to samo
+            // przenikanie paneli + kaskada elementów od dołu, co w górnym pasku nawigacji.
+            const musicBar = document.querySelector('.music-tabs-bar');
+            const musicLens = musicBar?.querySelector('.music-tab-lens');
+            const musicFill = musicBar?.querySelector('.music-tab-fill');
+            const musicTabBtns = [...document.querySelectorAll('[data-music-tab]')];
+            const musicPanels = [...document.querySelectorAll('[data-music-panel]')];
+            const MUSIC_ORDER = ['oryginalne', 'covery'];
+            const ms = { active: 0, x: 0, w: 0, vx: 0, vw: 0, tx: 0, tw: 0, lift: 0, drag: null, press: null, raf: 0, last: 0, suppressClick: false };
+            let activeMusicTab = 'oryginalne';
+            let currentMusicPanel = document.querySelector('.music-panel.is-on') || musicPanels[0];
+            let musicLeaveTimer = 0;
+
+            function musicTabBox(i) {
+                const btn = musicTabBtns[i];
+                if (!btn) return { x: 0, w: 0 };
+                return { x: btn.offsetLeft + btn.offsetWidth / 2, w: btn.offsetWidth };
+            }
+
+            function drawMusicBar() {
+                if (!musicBar || !musicLens || !musicFill || !musicBar.clientWidth) return;
+                const speed = Math.abs(ms.vx);
+                const inset = 3;
+                const baseH = Math.max(32, musicBar.clientHeight - inset * 2);
+                const h = Math.min(musicBar.clientHeight - inset * 2, baseH * (1 + 0.24 * ms.lift) * (1 - Math.min(speed * 0.0002, 0.08)));
+                const wantW = ms.w * (1 + 0.1 * ms.lift) + Math.min(speed * 0.03, 36);
+                // Kapsułka nie wychodzi poza pasek: przy krawędzi ściska się jak guma
+                const left = Math.max(inset, ms.x - wantW / 2);
+                const right = Math.min(musicBar.clientWidth - inset, ms.x + wantW / 2);
+                const w = Math.max(h, right - left);
+                const top = musicBar.clientHeight / 2 - h / 2;
+                for (const el of [musicLens, musicFill]) {
+                    el.style.left = left + 'px';
+                    el.style.top = top + 'px';
+                    el.style.width = w + 'px';
+                    el.style.height = h + 'px';
+                    el.style.borderRadius = h / 2 + 'px';
+                }
+                musicFill.style.opacity = String(1 - ms.lift);
+                musicTabBtns.forEach(btn => {
+                    const c = btn.offsetLeft + btn.offsetWidth / 2;
+                    const m = ms.lift * Math.max(0, 1 - Math.abs(c - ms.x) / (w * 0.8));
+                    btn.style.transform = m > 0.001 ? `scale(${1 + 0.16 * m})` : '';
+                });
+                window.liquidGL?.wake?.(200);
+            }
+
+            function stepMusicBar(now) {
+                const dt = Math.min(0.032, (now - ms.last) / 1000 || 0.016);
+                ms.last = now;
+                const tx = ms.drag ? ms.drag.x : ms.tx;
+                const k = ms.drag ? 900 : 360;
+                const c = ms.drag ? 60 : 30;
+                ms.vx += (-k * (ms.x - tx) - c * ms.vx) * dt;
+                ms.x += ms.vx * dt;
+                ms.vw += (-k * (ms.w - ms.tw) - c * ms.vw) * dt;
+                ms.w += ms.vw * dt;
+                const liftTarget = ms.drag ? 1 : Math.abs(ms.vx) > 60 ? 0.75 : 0;
+                ms.lift += (liftTarget - ms.lift) * Math.min(1, dt * (liftTarget > ms.lift ? 16 : 6));
+                drawMusicBar();
+                const settled = !ms.drag && Math.abs(ms.x - ms.tx) < 0.3 && Math.abs(ms.vx) < 4 && Math.abs(ms.w - ms.tw) < 0.3 && ms.lift < 0.01;
+                if (settled) {
+                    ms.x = ms.tx; ms.w = ms.tw; ms.vx = ms.vw = 0; ms.lift = 0;
+                    drawMusicBar();
+                    ms.raf = 0;
+                    return;
+                }
+                ms.raf = requestAnimationFrame(stepMusicBar);
+            }
+
+            function kickMusicBar() {
+                if (reduced) { ms.x = ms.drag ? ms.drag.x : ms.tx; ms.w = ms.tw; ms.lift = 0; drawMusicBar(); return; }
+                if (!ms.raf) { ms.last = performance.now(); ms.raf = requestAnimationFrame(stepMusicBar); }
+            }
+
+            function setMusicPill(i, instant) {
+                ms.active = i;
+                musicTabBtns.forEach((btn, j) => btn.setAttribute('aria-selected', String(j === i)));
+                const b = musicTabBox(i);
+                if (!b.w) return;
+                ms.tx = b.x; ms.tw = b.w;
+                if (instant || !ms.w) { ms.x = ms.tx; ms.w = ms.tw; ms.vx = ms.vw = 0; ms.lift = 0; drawMusicBar(); }
+                else kickMusicBar();
+            }
+
+            function finishMusicLeaving() {
+                clearTimeout(musicLeaveTimer);
+                document.querySelectorAll('.music-panel.is-leaving').forEach(p => {
+                    p.classList.remove('is-leaving', 'to-fade');
+                    p.style.height = '';
+                    if (p !== currentMusicPanel) p.classList.remove('is-on');
+                });
+            }
+
+            function setMusicTab(tab, animate) {
+                if (tab !== 'oryginalne' && tab !== 'covery') tab = 'oryginalne';
+                const idx = MUSIC_ORDER.indexOf(tab);
+                const changed = tab !== activeMusicTab;
+                activeMusicTab = tab;
+                setMusicPill(idx, !animate || reduced);
+
+                const nextPanel = musicPanels.find(p => p.dataset.musicPanel === tab);
+                if (!nextPanel || nextPanel === currentMusicPanel) return;
+
+                const prevPanel = currentMusicPanel;
+                currentMusicPanel = nextPanel;
+                finishMusicLeaving();
+
+                if (!animate || reduced || !prevPanel) {
+                    prevPanel?.classList.remove('is-on');
+                    nextPanel.classList.add('is-on');
+                    if (changed) animateGlass(260);
+                } else {
+                    prevPanel.style.height = prevPanel.offsetHeight + 'px';
+                    prevPanel.classList.add('is-leaving', 'to-fade');
+                    nextPanel.classList.add('is-on');
+                    const count = applyRise(panelItems(nextPanel));
+                    musicLeaveTimer = setTimeout(finishMusicLeaving, 480);
+                    animateGlass(count * 55 + 760);
+                }
+            }
+
+            function syncMusicTabFromHash(animate) {
+                const raw = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
+                if (raw === 'muzyka/covery') setMusicTab('covery', animate);
+                else if (raw === 'muzyka' || raw === 'muzyka/oryginalne') setMusicTab('oryginalne', animate);
+            }
+
+            musicTabBtns.forEach(btn => {
+                btn.addEventListener('click', e => {
+                    if (ms.suppressClick) { e.preventDefault(); ms.suppressClick = false; return; }
+                    const targetTab = btn.dataset.musicTab;
+                    if (targetTab === activeMusicTab) return;
+                    setMusicTab(targetTab, true);
+                    history.replaceState(null, '', targetTab === 'covery' ? '#muzyka/covery' : '#muzyka');
+                });
+            });
+
+            if (musicBar) {
+                musicBar.addEventListener('dragstart', e => e.preventDefault());
+                musicBar.addEventListener('pointerdown', e => {
+                    if (e.button !== 0) return;
+                    ms.press = { x0: e.clientX, id: e.pointerId };
+                });
+
+                musicBar.addEventListener('pointermove', e => {
+                    if (!ms.press || e.pointerId !== ms.press.id) return;
+                    if (!ms.drag && Math.abs(e.clientX - ms.press.x0) > 6) {
+                        ms.drag = { x: ms.x };
+                        musicBar.setPointerCapture(e.pointerId);
+                    }
+                    if (ms.drag) {
+                        const p = musicBar.getBoundingClientRect();
+                        const first = musicTabBox(0).x, last = musicTabBox(musicTabBtns.length - 1).x;
+                        ms.drag.x = Math.min(last + 8, Math.max(first - 8, e.clientX - p.left));
+                        kickMusicBar();
+                    }
+                });
+
+                const releaseMusicBar = e => {
+                    if (!ms.press || e.pointerId !== ms.press.id) return;
+                    ms.press = null;
+                    if (!ms.drag) return;
+                    let best = 0;
+                    musicTabBtns.forEach((_, i) => {
+                        if (Math.abs(musicTabBox(i).x - ms.drag.x) < Math.abs(musicTabBox(best).x - ms.drag.x)) best = i;
+                    });
+                    ms.drag = null;
+                    ms.suppressClick = true;
+                    setTimeout(() => { ms.suppressClick = false; }, 0);
+                    const targetTab = MUSIC_ORDER[best];
+                    if (targetTab === activeMusicTab) {
+                        kickMusicBar();
+                    } else {
+                        setMusicTab(targetTab, true);
+                        history.replaceState(null, '', targetTab === 'covery' ? '#muzyka/covery' : '#muzyka');
+                    }
+                };
+                musicBar.addEventListener('pointerup', releaseMusicBar);
+                musicBar.addEventListener('pointercancel', releaseMusicBar);
+
+                if (typeof ResizeObserver === 'function') {
+                    new ResizeObserver(() => {
+                        const b = musicTabBox(ms.active);
+                        if (!b.w) return;
+                        ms.tx = b.x; ms.tw = b.w;
+                        if (!ms.raf || !ms.w) {
+                            ms.x = ms.tx; ms.w = ms.tw;
+                            drawMusicBar();
+                        }
+                    }).observe(musicBar);
+                }
+            }
+
+            addEventListener('hashchange', () => {
+                const stayingOnMuzyka = current?.dataset.view === 'muzyka' && routeOf(location.hash) === 'muzyka';
+                syncMusicTabFromHash(stayingOnMuzyka);
+                show(routeOf(location.hash));
+            });
+            addEventListener('resize', () => {
+                setTab(s.active, true);
+                const b = musicTabBox(ms.active);
+                if (b.w) {
+                    ms.tx = b.x; ms.tw = b.w;
+                    if (!ms.raf || !ms.w) { ms.x = ms.tx; ms.w = ms.tw; drawMusicBar(); }
+                }
+                syncArtScroll(false);
+                animateGlass(300);
+            });
             addEventListener('scroll', () => { glassText?.render(); syncArtScroll(true); }, { passive: true });
-            document.fonts?.ready.then(() => setTab(s.active, true));
+            document.fonts?.ready.then(() => {
+                setTab(s.active, true);
+                const b = musicTabBox(ms.active);
+                if (b.w && (!ms.raf || !ms.w)) { ms.tx = ms.x = b.x; ms.tw = ms.w = b.w; drawMusicBar(); }
+            });
 
             // Ile dni trwają prace (np. nad Submerged)
             document.querySelectorAll('[data-since]').forEach(el => {
@@ -3063,11 +3583,13 @@
                 layout();
             })();
 
-            // --- Odsłuch roboczych fragmentów (Unfinished Maps, Submerged) ---
+            // --- Odsłuch utworów i coverów (Unfinished Maps, Submerged, What Went Wrong, Dark Souls) ---
             (() => {
                 const tracks = [
-                    { id: 'unfinished-maps', audio: document.getElementById('audio-unfinished-maps'), storyIndex: 2, fallbackDur: 30 },
-                    { id: 'submerged', audio: document.getElementById('audio-submerged'), storyIndex: 3, fallbackDur: 30 }
+                    { id: 'unfinished-maps', audio: document.getElementById('audio-unfinished-maps'), storyIndex: 2, fallbackDur: 30, tab: 'oryginalne' },
+                    { id: 'submerged', audio: document.getElementById('audio-submerged'), storyIndex: 3, fallbackDur: 30, tab: 'oryginalne' },
+                    { id: 'what-went-wrong', audio: document.getElementById('audio-what-went-wrong'), storyIndex: -1, fallbackDur: 205, tab: 'covery' },
+                    { id: 'dark-souls', audio: document.getElementById('audio-dark-souls'), storyIndex: -1, fallbackDur: 94, tab: 'covery' }
                 ].filter(t => t.audio);
                 if (!tracks.length) return;
 
@@ -3085,11 +3607,15 @@
                 tracks.forEach(t => {
                     const { id, audio, fallbackDur } = t;
                     const toggles = [...document.querySelectorAll(`[data-preview-toggle="${id}"]`)];
-                    const bar = document.querySelector(`[data-preview-bar="${id}"]`);
-                    const pill = bar?.closest('.preview-scrub');
-                    const track = bar?.querySelector('.preview-track');
-                    const barFill = bar?.querySelector('[data-preview-bar-fill]');
-                    const clock = pill?.querySelector('[data-preview-clock]');
+                    const bars = [...document.querySelectorAll(`[data-preview-bar="${id}"]`)].map(bar => {
+                        const pill = bar.closest('.preview-scrub');
+                        return {
+                            bar,
+                            track: bar.querySelector('.preview-track'),
+                            barFill: bar.querySelector('[data-preview-bar-fill]'),
+                            clock: pill?.querySelector('[data-preview-clock]')
+                        };
+                    });
 
                     function sync() {
                         const dur = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : fallbackDur;
@@ -3102,18 +3628,21 @@
                             btn.style.setProperty('--p', p.toFixed(4));
                             btn.querySelector('[data-preview-icon]')?.setAttribute('href', playing ? '#i-pause' : '#i-play');
                             const lbl = btn.querySelector('[data-preview-label]');
-                            if (lbl) lbl.textContent = playing ? 'Zatrzymaj' : 'Posłuchaj fragmentu';
+                            if (lbl) {
+                                if (!lbl.dataset.defaultLabel) lbl.dataset.defaultLabel = lbl.textContent;
+                                lbl.textContent = playing ? 'Zatrzymaj' : lbl.dataset.defaultLabel;
+                            }
                             const tm = btn.querySelector('[data-preview-time]');
                             if (tm) tm.textContent = playing || cur > 0 ? fmt(cur) : fmt(dur);
                         });
 
-                        if (bar) {
+                        bars.forEach(({ bar, barFill, clock }) => {
                             bar.style.setProperty('--p', p.toFixed(4));
                             bar.setAttribute('aria-valuemax', String(Math.round(dur)));
                             bar.setAttribute('aria-valuenow', String(Math.round(cur)));
-                        }
-                        if (barFill) barFill.style.setProperty('--p', p.toFixed(4));
-                        if (clock) clock.textContent = `${fmt(cur)} / ${fmt(dur)}`;
+                            if (barFill) barFill.style.setProperty('--p', p.toFixed(4));
+                            if (clock) clock.textContent = `${fmt(cur)} / ${fmt(dur)}`;
+                        });
                     }
 
                     toggles.forEach(btn => btn.addEventListener('click', () => {
@@ -3125,7 +3654,8 @@
                         }
                     }));
 
-                    if (bar && track) {
+                    bars.forEach(({ bar, track }) => {
+                        if (!track) return;
                         let dragging = false;
                         const seekAt = clientX => {
                             const r = track.getBoundingClientRect();
@@ -3158,7 +3688,7 @@
                                 else audio.pause();
                             }
                         });
-                    }
+                    });
 
                     ['play', 'pause', 'timeupdate', 'loadedmetadata', 'ended'].forEach(ev => audio.addEventListener(ev, () => {
                         if (ev === 'ended') audio.currentTime = 0;
@@ -3168,18 +3698,29 @@
                     sync();
                 });
 
-                // Gdy użytkownik przejdzie do innego utworu na osi lub w szczegółach, zatrzymujemy odsłuch
+                // Gdy użytkownik przejdzie do innego utworu na osi, zmieni podkategorię lub wejdzie w inne szczegóły, zatrzymujemy odsłuch
                 addEventListener('hashchange', () => {
                     const r = routeOf(location.hash);
                     if (r.startsWith('muzyka/')) {
                         tracks.forEach(t => {
                             if (r !== `muzyka/${t.id}` && !t.audio.paused) t.audio.pause();
                         });
+                    } else if (r === 'muzyka') {
+                        tracks.forEach(t => {
+                            if (t.tab !== activeMusicTab && !t.audio.paused) t.audio.pause();
+                        });
                     }
                 });
+                document.querySelectorAll('[data-music-tab]').forEach(btn => btn.addEventListener('click', () => {
+                    const targetTab = btn.dataset.musicTab;
+                    tracks.forEach(t => {
+                        if (t.tab !== targetTab && !t.audio.paused) t.audio.pause();
+                    });
+                }));
                 document.querySelectorAll('.scrub-node, .story [data-step]').forEach(el => el.addEventListener('click', () => {
                     const cards = document.querySelectorAll('.story-item');
                     tracks.forEach(t => {
+                        if (t.storyIndex < 0) return;
                         const card = cards[t.storyIndex];
                         if (card && !card.classList.contains('is-active') && !t.audio.paused) t.audio.pause();
                     });
@@ -3221,6 +3762,7 @@
                 }
             })();
 
+            syncMusicTabFromHash(false);
             show(routeOf(location.hash), true);
 
 
@@ -3271,10 +3813,10 @@
                     };
 
                     // Karty i widżety: przejrzyste, z szeroką fazą i lekkim powiększeniem jak w iOS
-                    liquidGL({ ...base, target: '.w-tracks, .w-apps, .w-project, .project-card, .list-card, .tl-card, .story, .tool-card, .text-card', bevelWidth: 0.22, frost: 0.4, magnify: 1.025 });
+                    liquidGL({ ...base, target: '.w-tracks, .w-apps, .w-project, .project-card, .list-card, .tl-card, .story, .cover-card, .tool-card, .text-card', bevelWidth: 0.22, frost: 0.4, magnify: 1.025 });
 
                     // Pigułki: faza na całą wysokość, więc tło zagina się od krawędzi do środka
-                    liquidGL({ ...base, target: '.nav, .seg, .back, .human, .tl-tag, .scrub-track, .preview-scrub, .art-scroll-track', bevelWidth: 0.5, frost: 0.3, refraction: 1.4, magnify: 1.04 });
+                    liquidGL({ ...base, target: '.nav, .seg, .music-tabs, .back, .human, .tl-tag, .scrub-track, .preview-scrub, .art-scroll-track', bevelWidth: 0.5, frost: 0.3, refraction: 1.4, magnify: 1.04 });
 
                     // Ikony narzędzi (start, lista, szczegóły): wypukłe kostki płynnego szkła
                     liquidGL({ ...base, target: '.w-apps .app-icon, .tool-card .app-icon, .app-head .app-icon', shadow: false, bevelWidth: 0.36, frost: 0.3, refraction: 1.5, bevelDepth: 1.2, aberration: 0.1, magnify: 1.1 });
@@ -3288,7 +3830,7 @@
                     // Kapsułka: czysta soczewka nad szkłem paska, bez cienia, lekko powiększa
                     liquidGL({
                         ...base,
-                        target: '.tab-lens',
+                        target: '.tab-lens, .music-tab-lens',
                         shadow: false,
                         reveal: 'none',
                         refraction: 1.5,

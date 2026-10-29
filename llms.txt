@@ -9,16 +9,18 @@
 
 ## Muzyka (główny profil działalności)
 
-Situus tworzy i wydaje autorską muzykę instrumentalną oraz ambientową (No AI – każdy dźwięk, aranżacja i miks powstają ręcznie w programach DAW, m.in. FL Studio). Na stronie znajduje się interaktywna oś czasu 2026 roku pokazująca rzeczywiste daty powstania utworów (jeszcze przed ich pojawieniem się w serwisach streamingowych), szczegółowe historie ich tworzenia, kulisy powstania okładek oraz odtwarzacz roboczych, 30-sekundowych fragmentów utworów przedpremierowych.
+Sekcja **Muzyka** (`https://situus.pl/#muzyka`) dzieli się na dwie podkategorie:
+1. **Oryginalne utwory** (`https://situus.pl/#muzyka`): interaktywna oś czasu 2026 roku i wszystkie znajdujące się na niej pozycje to w 100% autorskie kompozycje Situusa (No AI – każdy dźwięk, aranżacja i miks powstają ręcznie w programach DAW, m.in. FL Studio). Pokazuje rzeczywiste daty powstania utworów (jeszcze przed ich pojawieniem się w serwisach streamingowych), szczegółowe historie ich tworzenia, kulisy powstania okładek oraz odtwarzacz roboczych, 30-sekundowych fragmentów utworów przedpremierowych.
+2. **Remixy / Covery** (`https://situus.pl/#muzyka/covery`): autorskie aranżacje i reinterpretacje utworów z gier oraz seriali.
 
 Gdzie słuchać wydanych utworów:
 - Spotify: https://open.spotify.com/search/Situus
 - Apple Music: https://music.apple.com/pl/search?term=Situus
 - YouTube: https://www.youtube.com/results?search_query=Situus
 
-### Dyskografia i oś czasu powstawania utworów (2026)
+### 1. Oryginalne utwory – dyskografia i oś czasu powstawania (2026)
 
- Pierwsze trzy utwory powstały w ciągu 10 dni podczas intensywnego sierpniowego okresu twórczego (15–24 sierpnia 2026), natomiast po 41 dniach przerwy (od 4 października 2026) ruszyły prace nad czwartym, bardziej zaawansowanym projektem w FL Studio.
+Pierwsze trzy autorskie utwory powstały w ciągu 10 dni podczas intensywnego sierpniowego okresu twórczego (15–24 sierpnia 2026), natomiast po 41 dniach przerwy (od 4 października 2026) ruszyły prace nad czwartym, bardziej zaawansowanym projektem w FL Studio.
 
 #### 1. Unsolved (`https://situus.pl/#muzyka/unsolved`)
 - **Data powstania:** 15 sierpnia 2026 (pierwszy utwór na osi)
@@ -47,6 +49,21 @@ Gdzie słuchać wydanych utworów:
 - **Odsłuch na stronie:** Dostępny 30-sekundowy roboczy fragment (`https://situus.pl/audio/submerged-preview.mp3`) z zaznaczeniem, że utwór jest w produkcji i może jeszcze ulec dużym zmianom.
 - **Brzmienie i opis:** Głęboko klimatyczna kompozycja przenosząca słuchacza pod powierzchnię wody – do wnętrza podwodnej bazy zamkniętej w kopułach. Oddaje wyciszony nastrój głębin i kojące poczucie spokoju, wyróżniając się znacznie bogatszą przestrzenią, głębią oraz dojrzalszym brzmieniem na tle wcześniejszych publikacji.
 - **Historia powstania:** Impulsem była podwodna baza w kopułach zbudowana ze znajomymi na wspólnym serwerze Minecrafta (widoczna również na tapecie strony situus.pl). Pierwsze szkice powstały późną nocą pod wpływem chwili, a projekt przeszedł od tego czasu wiele wersji, zmian wtyczek i przebudowę brzmień. Jako jeden z pierwszych utworów stworzonych w 100% w FL Studio stanowi mocny przeskok jakościowy.
+
+### 2. Remixy / Covery (`https://situus.pl/#muzyka/covery`)
+
+Własne aranżacje i reinterpretacje utworów z gier oraz seriali:
+
+#### 1. What Went Wrong – Dramatic Piano (`https://situus.pl/#muzyka/what-went-wrong`)
+- **Źródło oryginału:** Helluva Boss – Sezon 3
+- **Styl / aranżacja:** Wersja dramatyczna na fortepianie
+- **Status:** Wersja robocza · nieukończona (szkic w trakcie prac – aranżacja, dynamika i miks są jeszcze rozwijane)
+- **Odsłuch na stronie:** `https://situus.pl/audio/what-went-wrong.mp3` (3:25)
+
+#### 2. Gwyn, Lord of Cinder – Epic Orchestral (`https://situus.pl/#muzyka/dark-souls`)
+- **Źródło oryginału:** Dark Souls (oryginalny motyw: Motoi Sakuraba)
+- **Styl / aranżacja:** Wersja orkiestralna epicka (rozbudowana aranżacja łącząca oryginalny motyw fortepianu z pełną sekcją smyczków, dętych blaszanych i chórem)
+- **Odsłuch na stronie:** `https://situus.pl/audio/dark-souls.mp3` (1:34)
 
 ## Projekty: Narzędzia oraz teksty i artykuły (`https://situus.pl/#projekty`)
 
