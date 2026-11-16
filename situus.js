@@ -1446,6 +1446,7 @@ function setupActivityTracking() {
             else if (/wrapped\.situus\.pl/i.test(href)) label = 'Messenger Wrapped';
             else if (/chat\.situus\.pl/i.test(href)) label = 'Situus Chat';
             else if (/praca_naukowa_2\.html/i.test(href)) label = 'Praca badawcza (STARK-WEB)';
+            else if (/odszumianie\/model\/Odszumianie\.exe/i.test(href)) label = 'Pobranie Odszumianie.exe';
             else if (/^mailto:/i.test(href)) label = `E-mail (${href.replace(/^mailto:/i, '').split('?')[0]})`;
 
             sendEvent('click', { target: label || href, href }, true);

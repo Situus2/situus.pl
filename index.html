@@ -1366,6 +1366,58 @@
             color: var(--ink-2);
         }
         .project-card .glass-c:hover .project-cta { color: var(--ink); }
+        .project-shot { display: block; width: 100%; height: auto; aspect-ratio: 1550 / 1050; object-fit: cover; border-radius: 12px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 16px 30px -16px rgba(0, 0, 0, 0.8); }
+        /* Suwak przed/po: natywny input range na wierzchu (klawiatura i dotyk działają bez dodatkowego kodu) */
+        .ba { margin: 20px 0 0; }
+        .ba-stage {
+            --pos: 50%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 14px;
+            background: #05070e;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 16px 32px -18px rgba(0, 0, 0, 0.75);
+            aspect-ratio: 1000 / 640;
+        }
+        .ba-img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+        .ba-before { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+        .ba-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: var(--pos);
+            width: 2px;
+            margin-left: -1px;
+            background: rgba(255, 255, 255, 0.92);
+            pointer-events: none;
+        }
+        .ba-line::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 34px;
+            height: 34px;
+            margin: -17px 0 0 -17px;
+            border-radius: 50%;
+            background: rgba(10, 12, 28, 0.78) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Cpath d='M13 11l-6 6 6 6M21 11l6 6-6 6' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+        .ba-tag {
+            position: absolute;
+            top: 10px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(10, 12, 28, 0.78);
+            color: var(--ink-2);
+            pointer-events: none;
+        }
+        .ba-tag--l { left: 10px; }
+        .ba-tag--r { right: 10px; }
+        .ba-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; touch-action: pan-y; }
+        .ba-stage:has(.ba-range:focus-visible) { outline: 2px solid #fff; outline-offset: 2px; }
+        .dl-note { margin-top: 12px; max-width: 60ch; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
 
         /* Widok artykułu (#projekty/stark-web-12b) */
         .page--article {
@@ -2569,7 +2621,7 @@
         <section class="view" id="projekty" data-view="projekty" data-title="Projekty – Situus" aria-labelledby="t-projekty">
             <div class="page">
                 <h2 class="page-title" id="t-projekty" tabindex="-1">Projekty</h2>
-                <p class="page-lead">Narzędzia działające w&nbsp;przeglądarce oraz dłuższe teksty o&nbsp;rzeczach, które buduję.</p>
+                <p class="page-lead">Narzędzia działające w&nbsp;przeglądarce, program na&nbsp;Windows oraz dłuższe teksty o&nbsp;rzeczach, które buduję.</p>
 
                 <h3 class="sec-label">Narzędzia</h3>
                 <div class="apps-grid">
@@ -2590,6 +2642,25 @@
                                 <span class="meta-status" data-server-box hidden><span class="dot" aria-hidden="true"></span>serwer <span data-server-status data-online="działa" data-offline="nie odpowiada">…</span></span>
                                 <span>Szczegóły <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></span>
                             </span>
+                        </a>
+                    </div>
+                </div>
+
+                <h3 class="sec-label">Program na&nbsp;Windows</h3>
+                <div class="projects-list">
+                    <div class="glass project-card">
+                        <a class="glass-c" href="#projekty/odszumianie">
+                            <div class="project-card-grid">
+                                <div>
+                                    <p class="story-meta"><time datetime="2026-11">Listopad 2026</time></p>
+                                    <h3>Odszumianie: program do&nbsp;usuwania szumu ze&nbsp;zdjęć, na&nbsp;moim własnym modelu</h3>
+                                    <p class="project-lead">Usuwa szum z&nbsp;wysokich ISO bez dorysowywania detali, działa lokalnie na&nbsp;karcie graficznej. Opis modelu, zrzuty i&nbsp;przycisk pobierania.</p>
+                                    <span class="project-cta">Szczegóły i&nbsp;pobieranie <svg class="chev" aria-hidden="true"><use href="#i-chev"/></svg></span>
+                                </div>
+                                <div aria-hidden="true">
+                                    <img class="project-shot" src="img/odszumianie-aplikacja.webp" alt="" width="1550" height="1050" decoding="async">
+                                </div>
+                            </div>
                         </a>
                     </div>
                 </div>
@@ -2814,6 +2885,117 @@
                                 <svg aria-hidden="true"><use href="#i-doc"/></svg>
                                 Otwórz pracę badawczą
                             </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ Program: Odszumianie ============ -->
+        <section class="view" data-view="projekty/odszumianie" data-title="Odszumianie – Projekty – Situus" aria-labelledby="t-odszumianie">
+            <div class="page page--article">
+                <div class="glass pill back"><a class="glass-c" href="#projekty"><svg aria-hidden="true"><use href="#i-back"/></svg>Projekty</a></div>
+
+                <header class="article-hero">
+                    <p class="eyebrow">Program dla Windows · Listopad 2026</p>
+                    <h2 class="article-title" id="t-odszumianie" tabindex="-1">Odszumianie: program do&nbsp;usuwania szumu ze&nbsp;zdjęć, na&nbsp;moim własnym modelu</h2>
+                    <p class="article-sub">Zdjęcia z&nbsp;wysokich ISO mają ziarno i&nbsp;plamy koloru. Zbudowałem program, który je usuwa i&nbsp;nie dorabia detali, których na&nbsp;zdjęciu nie było. Sieć neuronową wytrenowałem sam, od zera, na&nbsp;domowej karcie RTX 5060 Ti. Całość działa lokalnie, zdjęcia nie opuszczają komputera.</p>
+                    <div class="actions">
+                        <a class="btn btn--primary" href="https://log.situus.pl/odszumianie/model/Odszumianie.exe" rel="noopener">Pobierz dla Windows (.exe, ok.&nbsp;113&nbsp;MB)</a>
+                    </div>
+                    <p class="dl-note">Windows 11, karta graficzna z&nbsp;obsługą DirectX 12. Plik nie ma podpisu cyfrowego, więc Windows SmartScreen może pokazać ostrzeżenie: wybierz „Więcej informacji”, a&nbsp;potem „Uruchom mimo to”. Przy pierwszym uruchomieniu program sam pobiera model (około 175&nbsp;MB).</p>
+                </header>
+
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <h3>Po co mi to było</h3>
+                        <p>Fotografuję głównie nocą, na&nbsp;ISO od 1500 do 32 000, Sony A6700 i&nbsp;Canonem R10. Gotowe odszumiacze albo zostawiały plamy i&nbsp;ziarno na&nbsp;skórze i&nbsp;niebie, albo wygładzały wszystko na&nbsp;plastik. Narzędzia generatywne wychodzą z&nbsp;tego inaczej, ale potrafią coś dopisać: w&nbsp;jednym z&nbsp;moich testów Gemini zamienił napis „warta” na&nbsp;budynku na&nbsp;„visita”. Chciałem czegoś, co usuwa szum i&nbsp;niczego nie zmyśla.</p>
+
+                        <figure class="ba" data-ba>
+                            <div class="ba-stage">
+                                <img class="ba-img" src="img/odszumianie-a-po.webp" alt="Fragment zdjęcia po odszumieniu: napis „warta” na wieżowcu, czyste niebo" width="1000" height="640" loading="lazy" decoding="async">
+                                <img class="ba-img ba-before" src="img/odszumianie-a-przed.webp" alt="Ten sam fragment przed odszumianiem: ziarno na niebie i wokół napisu" width="1000" height="640" loading="lazy" decoding="async">
+                                <span class="ba-tag ba-tag--l">Przed</span><span class="ba-tag ba-tag--r">Po</span>
+                                <span class="ba-line" aria-hidden="true"></span>
+                                <input class="ba-range" type="range" min="0" max="100" value="50" aria-label="Porównanie przed i po: położenie podziału">
+                            </div>
+                            <figcaption class="snake-meta">
+                                <b>Napis zostaje, ziarno znika</b>
+                                <span>Fragment 1:1 zdjęcia z ISO 12 800 (Sony A6700), tryb Auto. Przesuń suwak, żeby porównać. Litery „warta” wyglądają tak samo przed i&nbsp;po, czyste jest tylko niebo i&nbsp;ściana.</span>
+                            </figcaption>
+                        </figure>
+
+                        <figure class="ba" data-ba>
+                            <div class="ba-stage">
+                                <img class="ba-img" src="img/odszumianie-b-po.webp" alt="Fragment elewacji z oknami po odszumieniu" width="1000" height="640" loading="lazy" decoding="async">
+                                <img class="ba-img ba-before" src="img/odszumianie-b-przed.webp" alt="Ten sam fragment elewacji przed odszumianiem" width="1000" height="640" loading="lazy" decoding="async">
+                                <span class="ba-tag ba-tag--l">Przed</span><span class="ba-tag ba-tag--r">Po</span>
+                                <span class="ba-line" aria-hidden="true"></span>
+                                <input class="ba-range" type="range" min="0" max="100" value="50" aria-label="Porównanie przed i po: położenie podziału">
+                            </div>
+                            <figcaption class="snake-meta">
+                                <b>Drobne detale w oknach</b>
+                                <span>To samo zdjęcie, inny fragment 1:1. Ramy okien i&nbsp;światła w&nbsp;biurach zostają ostre, a&nbsp;gładkie powierzchnie przestają być ziarniste.</span>
+                            </figcaption>
+                        </figure>
+
+                        <figure class="snake-card" style="margin-top: 20px">
+                            <button type="button" class="snake-img-wrap" data-zoom-img="img/odszumianie-aplikacja.webp" data-zoom-caption="Odszumianie, tryb Auto: zdjęcie z ISO 12 800 (Sony A6700), podgląd Przed | Po.">
+                                <img src="img/odszumianie-aplikacja.webp" alt="Okno programu Odszumianie z podziałem Przed i Po na nocnym zdjęciu miasta" width="1550" height="1050" loading="lazy" decoding="async" style="aspect-ratio: 1550 / 1050">
+                            </button>
+                            <figcaption class="snake-meta">
+                                <b>Tryb Auto na&nbsp;zdjęciu z&nbsp;ISO 12 800</b>
+                                <span>Po&nbsp;prawej panel pokazuje, co program zmierzył: szum 5,9/255 (typowo dla tego ISO 5,3), czystość 75%, ostrość 45%, ziarno 20%.</span>
+                            </figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <h3>Co potrafi program</h3>
+                        <dl class="spec" aria-label="Funkcje programu">
+                            <div><dt>Tryb Auto</dt><dd>sam dobiera czystość, ostrość i&nbsp;ziarno</dd></div>
+                            <div><dt>Ręcznie</dt><dd>suwak czystości 0–100%</dd></div>
+                            <div><dt>Wykończenie</dt><dd>lekka ostrość i&nbsp;naturalne ziarno</dd></div>
+                            <div><dt>Podgląd</dt><dd>Przed | Podział | Po, lupa 100%</dd></div>
+                            <div><dt>Wiele zdjęć</dt><dd>przeciągnij pliki albo folder</dd></div>
+                            <div><dt>Zapis</dt><dd>obok oryginału, EXIF i&nbsp;ICC zachowane</dd></div>
+                            <div><dt>Kolory</dt><dd>4 wersje: Ogólny, Ciepły, Filmowy, Chłodny</dd></div>
+                            <div><dt>Wygląd</dt><dd>10 palet kolorów</dd></div>
+                        </dl>
+                        <p>Tryb Auto liczy szum z&nbsp;samego obrazu, nie z&nbsp;wartości ISO. To samo ISO daje bardzo różny szum zależnie od aparatu i&nbsp;sceny: nocny Canon R10 na&nbsp;ISO 800 miał u&nbsp;mnie większe plamy niż Sony na&nbsp;ISO 12 800. Program mierzy równe fragmenty zdjęcia, sprawdza na&nbsp;wycinkach z&nbsp;fakturą, ile drobnego detalu model zostawia, i&nbsp;dopiero wtedy wybiera czystość. Wynik trafia do&nbsp;pliku, na&nbsp;przykład <code>foto_v3_auto.jpg</code> (JPEG q98, PNG zostaje PNG-iem). Oryginału nigdy nie nadpisuje.</p>
+                        <p>Zakładka Kolory to osobna, mała sieć, która z&nbsp;jednego zdjęcia robi cztery wersje kolorystyczne. Jest prostsza niż odszumianie: w&nbsp;dużej części to styl danego klimatu z&nbsp;niewielkim dopasowaniem do&nbsp;zdjęcia.</p>
+                    </div>
+                </div>
+
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <h3>Własny model, trenowany od&nbsp;zera</h3>
+                        <p>Sercem programu jest sieć z&nbsp;rodziny NAFNet. Model jest „ślepy”: nie trzeba mu mówić, ile szumu jest na&nbsp;zdjęciu. Uczyłem go na&nbsp;szumie z&nbsp;symulatora, który skalibrowałem na&nbsp;pomiarach A6700 (łącznie z&nbsp;kompresją JPEG i&nbsp;odszumianiem w&nbsp;aparacie), oraz na&nbsp;prawdziwych parach zdjęć z&nbsp;tej samej sceny na&nbsp;statywie: wysokie ISO i&nbsp;wzorzec z&nbsp;ISO 100.</p>
+                        <p>Metryki typu PSNR nagradzają rozmycie, więc przestałem na&nbsp;nich polegać. Wersje porównuję w&nbsp;ślepym teście A/B, który sam napisałem: pokazuje dwa wyniki bez podpisów, ja wybieram lepszy, a&nbsp;z&nbsp;głosów liczę ranking Elo.</p>
+
+                        <dl class="spec" aria-label="Modele w programie">
+                            <div><dt>v1</dt><dd>NAFNet-w32, sprawdzony</dd></div>
+                            <div><dt>v2</dt><dd>NAFNet-w32, uczony „ślepo”</dd></div>
+                            <div><dt>v3 (domyślny)</dt><dd>szerszy NAFNet + uwaga kanałowa</dd></div>
+                            <div><dt>Krok treningu v3</dt><dd>254 614 z&nbsp;400 000</dd></div>
+                        </dl>
+                        <p>v3 jest najnowszy i&nbsp;domyślny: ma 87 mln parametrów i&nbsp;w&nbsp;moich oczach lepiej oddziela szum od&nbsp;faktury. Nie jest jeszcze dotrenowany do&nbsp;końca, bo w&nbsp;programie jest checkpoint z&nbsp;kroku 254 614 z&nbsp;planowanych 400 000.</p>
+                    </div>
+                </div>
+
+                <div class="glass text-card">
+                    <div class="glass-c">
+                        <h3>Ograniczenia</h3>
+                        <p>Program pracuje na&nbsp;JPEG-ach i&nbsp;PNG-ach, nie na&nbsp;RAW-ach. Aparat zdążył już wygładzić drobne szczegóły, a&nbsp;to, czego nie ma w&nbsp;pliku, nie da się odzyskać żadnym odszumiaczem. Testowałem głównie na&nbsp;zdjęciach z&nbsp;Sony A6700 i&nbsp;Canona R10. Ustawienia trybu Auto dobierałem na&nbsp;około 15 zdjęciach, na&nbsp;oko, więc na&nbsp;innych aparatach mogą wymagać poprawek ręcznych.</p>
+
+                        <div class="article-foot">
+                            <div class="article-foot-text">
+                                <b>Odszumianie dla Windows</b>
+                                <small>Darmowe, działa na&nbsp;twojej karcie graficznej. Program sam sprawdza aktualizacje i&nbsp;nowe modele.</small>
+                            </div>
+                            <a class="btn btn--primary" href="https://log.situus.pl/odszumianie/model/Odszumianie.exe" rel="noopener">Pobierz .exe</a>
                         </div>
                     </div>
                 </div>
@@ -3848,6 +4030,15 @@
                         animateGlass(360);
                     });
                 }
+
+                document.querySelectorAll('[data-ba]').forEach(fig => {
+                    const range = fig.querySelector('.ba-range');
+                    const stage = fig.querySelector('.ba-stage');
+                    if (!range || !stage) return;
+                    const sync = () => stage.style.setProperty('--pos', range.value + '%');
+                    range.addEventListener('input', sync);
+                    sync();
+                });
 
                 const zoomDialog = document.getElementById('zoom-dialog');
                 const zoomImg = document.getElementById('zoom-dialog-img');

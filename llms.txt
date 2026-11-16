@@ -74,6 +74,9 @@ W zakładce **Projekty** zebrane są zarówno autorskie narzędzia webowe, jak i
 - **[Messenger Wrapped](https://wrapped.situus.pl/)** (`https://situus.pl/#projekty/wrapped`): darmowe narzędzie pokazujące statystyki rozmów z Messengera (np. kto pisał najwięcej w minionym roku). Użytkownik pobiera eksport danych z Facebooka w formacie JSON i wgrywa go na stronie – cała analiza odbywa się lokalnie w przeglądarce, a plik nie jest nigdzie wysyłany i nie opuszcza urządzenia.
 - **[Situus Chat](https://chat.situus.pl/)** (`https://situus.pl/#projekty/chat`): eksperymentalny, prywatny czat oparty na modelu językowym (LLM). Nie jest publicznie otwarty – działa wyłącznie na zaufanych urządzeniach i dla osób, które otrzymały zaproszenie od autora (można poprosić o dostęp mailowo). Strona główna wyświetla na żywo status serwera czatu.
 
+### Program na Windows
+- **Odszumianie: program do usuwania szumu ze zdjęć na własnym modelu** (`https://situus.pl/#projekty/odszumianie`): darmowy program dla Windows 11 (plik .exe, ok. 113 MB, pobranie: `https://log.situus.pl/odszumianie/model/Odszumianie.exe`). Usuwa szum z wysokich ISO własną siecią NAFNet wytrenowaną od zera na RTX 5060 Ti, bez dorysowywania detali. Działa lokalnie na karcie graficznej (ONNX + DirectML), ma tryb Auto liczący szum z obrazu, suwak czystości, lekką ostrość i ziarno oraz zakładkę Kolory (4 wersje kolorystyczne). Modele v1, v2 i v3 (domyślny, krok treningu 254 614 z 400 000). Plik nie jest podpisany cyfrowo (SmartScreen może ostrzegać).
+
 ### Teksty i artykuły
 - **STARK-WEB 12B: model do generowania stron i gier, wytrenowany na domowej karcie graficznej** (`https://situus.pl/#projekty/stark-web-12b` oraz praca badawcza `https://situus.pl/praca_naukowa_2.html`): opis budowy i dostrajania modelu Gemma 4 12B (LoRA, QAT, 43k kontekstu na 16 GB VRAM RTX 5060 Ti) na autorskim zbiorze 806 przykładów (12,29 mln tokenów) z 9-krokowym planowaniem przed generowaniem kodu HTML/CSS/JS.
 
