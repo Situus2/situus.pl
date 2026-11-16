@@ -38,10 +38,10 @@ Pierwsze trzy autorskie utwory powstały w ciągu 10 dni podczas intensywnego si
 
 #### 3. Unfinished Maps (`https://situus.pl/#muzyka/unfinished-maps`)
 - **Data powstania:** 24 sierpnia 2026 (4 dni po „Far Lands”)
-- **Status:** Czeka na wydanie (w trakcie dopracowywania przed oficjalną premierą w serwisach streamingowych)
-- **Odsłuch na stronie:** Dostępny 30-sekundowy roboczy fragment (`https://situus.pl/audio/unfinished-maps-preview.mp3`) z zaznaczeniem, że przed premierą utwór będzie jeszcze dopracowywany.
+- **Status:** Wydany
+- **Odsłuch na stronie:** Dostępny 30-sekundowy fragment (`https://situus.pl/audio/unfinished-maps-preview.mp3`).
 - **Brzmienie i opis:** Spokojna, wyciszona kompozycja najpełniej zanurzona w estetyce inspirowanej twórczością C418 oraz klasycznym klimatem Minecrafta. Balansuje na granicy lekkiego smutku i głębokiej nostalgii, przełamując je subtelną nutą nadziei. W tle ponownie słychać delikatny szum deszczu spajający przestrzeń.
-- **Historia powstania i okładka:** Utwór powstał na fali tego samego przypływu weny co dwa pierwsze nagrania. Pomysł na obecną okładkę – przekształcenie kadru deszczowej wioski z „Far Lands” w pikselową mapę z gry z charakterystyczną obwódką i paletą barw – pojawił się we śnie i został zrealizowany od razu po przebudzeniu. Przed oficjalną premierą brzmienie utworu będzie jeszcze szlifowane, a w planach jest też potencjalne odświeżenie okładki na zupełnie nowe ujęcie, całkowicie niezależne od „Far Lands”, lecz nadal utrzymane w motywie mapy.
+- **Historia powstania i okładka:** Utwór powstał na fali tego samego przypływu weny co dwa pierwsze nagrania. Pomysł na obecną okładkę – przekształcenie kadru deszczowej wioski z „Far Lands” w pikselową mapę z gry z charakterystyczną obwódką i paletą barw – pojawił się we śnie i został zrealizowany od razu po przebudzeniu. Utwór jest już wydany.
 
 #### 4. Submerged (`https://situus.pl/#muzyka/submerged`)
 - **Data rozpoczęcia prac:** od 4 października 2026 (41 dni po „Unfinished Maps”)
