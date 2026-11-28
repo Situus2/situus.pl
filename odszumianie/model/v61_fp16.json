@@ -1,0 +1,83 @@
+{
+  "id": "v61",
+  "label": "v6.1",
+  "filename": "v61_fp16.onnx",
+  "parts": [
+    {
+      "url": "https://situus.pl/odszumianie/model/v61_fp16.7d080272.onnx.p000",
+      "size": 47185920,
+      "sha256": "7e3dd8c1c4bfc8a563fceb51be0e93b4eaf0d80b2ffd15afcd047884c6a17b4d"
+    },
+    {
+      "url": "https://situus.pl/odszumianie/model/v61_fp16.7d080272.onnx.p001",
+      "size": 47185920,
+      "sha256": "b64d4e11c6f3906403033516ae975104bda3e3dd9a4cc56e33655daabee95c9e"
+    },
+    {
+      "url": "https://situus.pl/odszumianie/model/v61_fp16.7d080272.onnx.p002",
+      "size": 47185920,
+      "sha256": "7e4dad129956300b1a0204b699dc377886d9d25e0837985ced3c3e4bdbf7ac88"
+    },
+    {
+      "url": "https://situus.pl/odszumianie/model/v61_fp16.7d080272.onnx.p003",
+      "size": 33096403,
+      "sha256": "b22bbe16461e4ca8cb4eb287354b7ecf66c710599c767b46076294ca7ec5600d"
+    }
+  ],
+  "sha256": "7d080272e66030cebb07f6fb35b2832a74f7488ed0523f34c30a2a9d6194f77f",
+  "size": 174654163,
+  "step": 254614,
+  "total_steps": 400000,
+  "score": 36.309,
+  "blind": true,
+  "exported": "2026-11-13 23:26",
+  "tag": "Najnowszy",
+  "blurb": "Nowa sieć: czyściej oddziela szum od faktury i trzyma więcej detali. Wciąż się uczy (krok 254614 z 400000).",
+  "auto": {
+    "resid_to_sigma": 0.654,
+    "detail_keep_min": 0.7,
+    "removal_scale": 0.975,
+    "grid": [
+      0.08,
+      0.16,
+      0.25,
+      0.35,
+      0.5,
+      0.6,
+      0.72,
+      0.8,
+      0.88
+    ],
+    "rows": [
+      [
+        2.54,
+        [
+          0.0,
+          0.016,
+          0.086,
+          0.15,
+          0.275,
+          0.349,
+          0.437,
+          0.492,
+          0.559
+        ]
+      ],
+      [
+        5.3,
+        [
+          0.276,
+          0.386,
+          0.465,
+          0.554,
+          0.674,
+          0.737,
+          0.845,
+          0.907,
+          0.96
+        ]
+      ]
+    ],
+    "source": "v6.1 krok 254614 (pomiar 2026-11-13)"
+  }
+}

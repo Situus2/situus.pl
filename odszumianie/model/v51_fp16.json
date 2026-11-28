@@ -1,0 +1,13 @@
+{
+  "id": "v51",
+  "label": "v5.1",
+  "filename": "v51_fp16.onnx",
+  "url": "https://situus.pl/odszumianie/model/v51_fp16.onnx",
+  "sha256": "4fe055b8645ac3344db8eb29f1a56cbadac074ad2bb116d6c4f04422412a3543",
+  "size": 58726951,
+  "step": 20000,
+  "total_steps": 60000,
+  "score": 37.957,
+  "blind": true,
+  "exported": "2026-11-09 23:40"
+}
