@@ -1,8 +1,8 @@
 {
-  "app_version": "1.6.2",
+  "app_version": "1.6.3",
   "mandatory": false,
-  "app_sha256": "70ea404e6d2549d1bb7a5afdfd8490a7d01f2f0ac10b5f0ba8196ad6affa3936",
-  "app_size": 99652068,
+  "app_sha256": "da3c1e8b95d0a99dca5f98d990d42a999d8fe34e47b457a1c0f023283512044d",
+  "app_size": 99652793,
   "model": {
     "id": "v5c",
     "label": "v5c",
@@ -117,6 +117,6 @@
       }
     }
   ],
-  "notes": "Wersja 1.6.2: nowa opcja ×1 w powiększaniu – Kandinsky poprawia ostrość w tej samej rozdzielczości, a model odszumiania zbiera szum (szybciej niż ×2 i z mniejszą ilością dorysowanych szczegółów).",
+  "notes": "Wersja 1.6.3: poprawka porównania Przed | Po po powiększaniu (×1, ×2, ×4) – po stronie Przed zawsze widać teraz oryginalne zdjęcie zamiast obrazu po powiększeniu przed odszumianiem.",
   "app_url": "https://situus.pl/odszumianie/model/Odszumianie.exe"
 }
