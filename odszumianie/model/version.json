@@ -1,8 +1,8 @@
 {
-  "app_version": "1.6.1",
+  "app_version": "1.6.2",
   "mandatory": false,
-  "app_sha256": "f1ea94357905865976d99f4c010ed54bb5895e72ea82f79e8401a8153a6352ae",
-  "app_size": 99651687,
+  "app_sha256": "70ea404e6d2549d1bb7a5afdfd8490a7d01f2f0ac10b5f0ba8196ad6affa3936",
+  "app_size": 99652068,
   "model": {
     "id": "v5c",
     "label": "v5c",
@@ -117,6 +117,6 @@
       }
     }
   ],
-  "notes": "Wersja 1.6.1: aktualizacje i modele pobierają się teraz z situus.pl (nie zależą już od domowego serwera). Powiększanie pokazuje na podglądzie kafelki odsłaniane na żywo i startuje od razu po kliknięciu. Dalej: style Auto Naturalnie / Czysto / Mocno z naturalnym ziarnem.",
+  "notes": "Wersja 1.6.2: nowa opcja ×1 w powiększaniu – Kandinsky poprawia ostrość w tej samej rozdzielczości, a model odszumiania zbiera szum (szybciej niż ×2 i z mniejszą ilością dorysowanych szczegółów).",
   "app_url": "https://situus.pl/odszumianie/model/Odszumianie.exe"
 }
